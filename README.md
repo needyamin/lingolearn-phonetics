@@ -2,7 +2,7 @@
 
 LingoLearn helps students master English pronunciation using real voice output, IPA phonetics, and a built-in English–Bangla dictionary.
 
-<img width="681" height="801" alt="Image" src="https://github.com/user-attachments/assets/b5814a0a-aa9b-40a9-9fd9-1af88c50ecaa" />
+<img width="638" height="738" alt="Image" src="https://github.com/user-attachments/assets/c2a65521-d207-408a-b4f4-5b8cafd0b6d3" />
 
 ## Features
 
