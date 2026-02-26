@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onClearEntry: (callback) => ipcRenderer.on('clear-entry', (_event) => callback()),
     onCopyIpa: (callback) => ipcRenderer.on('copy-ipa', (_event) => callback()),
     onShowSettings: (callback) => ipcRenderer.on('show-settings', (_event) => callback()),
-    onShowAbout: (callback) => ipcRenderer.on('show-about', (_event) => callback())
+    onShowAbout: (callback) => ipcRenderer.on('show-about', (_event) => callback()),
+    openExternal: (url) => ipcRenderer.invoke('open-external', url)
 });

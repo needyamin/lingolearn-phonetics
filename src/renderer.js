@@ -357,6 +357,8 @@ function setupEventListeners() {
 
     if (closeAbout) closeAbout.onclick = closeAboutModal;
     if (btnCloseAbout) btnCloseAbout.onclick = closeAboutModal;
+    const aboutGithub = document.getElementById('about-github');
+    if (aboutGithub) aboutGithub.onclick = (e) => { e.preventDefault(); window.electronAPI.openExternal('https://github.com/needyamin'); };
 
     // Window click to close modals
     window.onclick = (event) => {

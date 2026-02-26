@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTS Pronunciation Practice</title>
+    <title>LingoLearn Phonetics</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -14,7 +14,10 @@
             <button id="btn-settings" class="btn-settings" title="Settings">⚙️</button>
         </div>
 
-        <h1>Pronunciation Practice</h1>
+        <div class="app-logo">
+            <img src="../asset/logo.png" alt="LingoLearn Phonetics" class="logo-img">
+        </div>
+        <h3 style="text-align: center;">Pronunciation Practice</h3>
         <p class="subtitle">Type a word to hear and see its pronunciation</p>
 
         <div class="input-section">
@@ -99,24 +102,28 @@
     <div id="about-modal" class="modal">
         <div class="modal-content about-content">
             <span class="close close-about">&times;</span>
-            <div class="about-header">
-                <h2 class="about-title">TTS Pronunciation Practice</h2>
-                <span class="about-version">1.0.0</span>
-            </div>
-            <p class="about-tagline">Practice English pronunciation with Text-to-Speech and IPA phonetics.</p>
-            <div class="about-meta">
-                <span class="about-meta-item"><strong>Developer</strong> Yamin</span>
-                <span class="about-meta-item"><strong>License</strong> ISC</span>
-            </div>
-            <div class="about-powered">
-                <span class="about-powered-label">Powered by</span>
-                <div class="about-badges">
-                    <span class="about-badge">Electron</span>
-                    <span class="about-badge">Web Speech API</span>
-                    <span class="about-badge">CMU Pronouncing Dictionary</span>
+            <h2 class="about-title">LingoLearn Phonetics</h2>
+            <div class="about-developer">
+                <img src="../asset/github_profile.png" alt="Md. Yamin Hossain" class="about-dev-photo">
+                <div class="about-dev-info">
+                    <strong class="about-dev-name">Md. Yamin Hossain</strong>
+                    <span class="about-dev-role">Sr. Software Engineer</span>
+                    <span class="about-dev-location">Dhaka, Bangladesh</span>
+                    <span class="about-meta-item">License: <span class="badge bg-secondary">ISC</span></span>
+                    <a href="#" id="about-github" class="about-link">@needyamin · GitHub</a>
                 </div>
             </div>
-            <button id="btn-close-about" class="btn-speak about-close-btn">Close</button>
+
+            <div class="about-footer">
+                <div class="about-powered about-powered-inline">
+                    <span class="badge bg-secondary about-powered-label">Tags</span>
+                    <div class="about-badges">
+                        <span class="about-badge">CMU Pronouncing Dictionary</span>
+                        <span class="about-badge">Bangla Dictionary</span>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-close-about" class="about-close-btn">Close</button>
         </div>
     </div>
 

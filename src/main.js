@@ -31,7 +31,7 @@ function createWindow() {
         width: 650,
         height: 750,
         resizable: true,
-        icon: path.join(__dirname, '../asset/y_icon_temp.ico'),
+        icon: path.join(__dirname, '../asset/icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -73,13 +73,9 @@ function createWindow() {
         {
             label: 'Edit',
             submenu: [
-                { role: 'undo' },
-                { role: 'redo' },
-                { type: 'separator' },
                 { role: 'cut' },
                 { role: 'copy' },
                 { role: 'paste' },
-                { role: 'delete' },
                 { role: 'selectAll' },
                 { type: 'separator' },
                 { label: 'Clear Entry', accelerator: 'CmdOrCtrl+K', click: () => mainWindow.webContents.send('clear-entry') },
@@ -100,10 +96,10 @@ function createWindow() {
         {
             label: 'Help',
             submenu: [
-                { label: 'Learn More', click: async () => { await shell.openExternal('https://github.com/needyamin/tts-pronunciation-practice'); } },
-                { label: 'Report Issue', click: async () => { await shell.openExternal('https://github.com/needyamin/tts-pronunciation-practice/issues'); } },
+                { label: 'Learn More', click: async () => { await shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics'); } },
+                { label: 'Report Issue', click: async () => { await shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics/issues'); } },
                 { type: 'separator' },
-                { label: 'About', click: () => mainWindow.webContents.send('show-about') }
+                { label: 'About Us', click: () => mainWindow.webContents.send('show-about') }
             ]
         }
     ];
@@ -112,13 +108,13 @@ function createWindow() {
 }
 
 function createTray() {
-    const iconPath = path.join(__dirname, '../asset/y_icon_temp.ico');
+    const iconPath = path.join(__dirname, '../asset/icon.png');
     tray = new Tray(iconPath);
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Show', click: () => mainWindow.show() },
         { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } }
     ]);
-    tray.setToolTip('TTS Pronunciation Practice');
+    tray.setToolTip('LingoLearn Phonetics');
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
@@ -182,3 +178,4 @@ ipcMain.handle('get-bangla-dict', async () => {
         return null;
     }
 });
+ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
