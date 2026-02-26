@@ -2,7 +2,7 @@
 
 LingoLearn helps students master English pronunciation using real voice output, IPA phonetics, and a built-in English–Bangla dictionary.
 
-<img width="639" height="745" alt="Image" src="https://github.com/user-attachments/assets/8ea55153-e1d5-4683-9ca9-c137c7c962be" />
+<img width="681" height="801" alt="Image" src="https://github.com/user-attachments/assets/b5814a0a-aa9b-40a9-9fd9-1af88c50ecaa" />
 
 ## Features
 
@@ -71,3 +71,4 @@ Electron · Web Speech API · CMU Pronouncing Dictionary · Bangla dictionary (a
 ## License
 
 ISC
+
