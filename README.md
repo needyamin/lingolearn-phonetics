@@ -64,7 +64,7 @@ Installs per user under Programs, adds Start Menu and Desktop shortcuts, and doe
 ### MSIX (Microsoft Store)
 
 1. Reserve **LingoLearn Phonetics** in [Partner Center](https://partner.microsoft.com/dashboard).
-2. Open **Product management → App identity** and paste **Name**, **Publisher**, and **Publisher display name** into `installer/store.config.json`.
+2. Store identity is in `installer/store.config.json` (`ANSNEWTECH.LingoLearnPhonetics`, publisher `ANSNEW TECH.`).
 3. Install the [Windows SDK](https://developer.microsoft.com/windows/downloads/windows-sdk/) so `MakeAppx.exe` is available. If it is missing, the script builds `.appx` and copies it to `.msix`.
 4. Run `npm run dist:msix`.
 5. Upload `dist/LingoLearn-Phonetics-2.0.0.msix` on the Store **Packages** page.

@@ -1,10 +1,12 @@
 {
-  "identityName": "needyamin.LingoLearnPhonetics",
-  "publisher": "CN=Md. Yamin Hossain",
-  "publisherDisplayName": "Md. Yamin Hossain",
+  "identityName": "ANSNEWTECH.LingoLearnPhonetics",
+  "publisher": "CN=087A9974-75CB-44FC-B893-8D3999E5E5E5",
+  "publisherDisplayName": "ANSNEW TECH.",
   "applicationId": "LingoLearnPhonetics",
   "displayName": "LingoLearn Phonetics",
   "description": "English pronunciation, IPA phonetics, Bangla dictionary, and speaking practice.",
+  "packageFamilyName": "ANSNEWTECH.LingoLearnPhonetics_7gnedkmjvvvj0",
+  "storeId": "9NM5FFT57B7G",
   "privacyPolicyUrl": "https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md",
   "websiteUrl": "https://github.com/needyamin/lingoLearn-phonetics/blob/main/website.html"
 }

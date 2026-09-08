@@ -12,6 +12,9 @@ if (app.isPackaged && !process.windowsStore) {
 }
 
 const store = new Store();
+if (process.platform === 'win32') {
+    app.setAppUserModelId('com.needyamin.lingolearn');
+}
 let mainWindow;
 let practiceWindow;
 let tray;

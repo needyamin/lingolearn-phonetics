@@ -40,7 +40,7 @@ DisableProgramGroupPage=yes
 OutputDir={#OutputDir}
 OutputBaseFilename=LingoLearn-Phonetics-Setup-{#AppVersion}
 SetupIconFile={#SetupIcon}
-UninstallDisplayIcon={app}\{#AppExe}
+UninstallDisplayIcon={app}\app.ico
 UninstallDisplayName={#AppName}
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -72,10 +72,10 @@ Name: "startupicon"; Description: "Start {#AppName} when I sign in"; GroupDescri
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "English pronunciation, IPA, and Bangla dictionary"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\app.ico"; Comment: "English pronunciation, IPA, and Bangla dictionary"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: ""; Tasks: startupicon
+Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\app.ico"; Tasks: desktopicon
+Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; IconFilename: "{app}\app.ico"; Tasks: startupicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent

@@ -40,13 +40,10 @@ function pngToIco(pngBuf) {
 function ensureSetupIcon() {
     const dest = path.join(ROOT, 'installer', 'icon.ico');
     const pngPath = path.join(ROOT, 'asset', 'icon.png');
-    const existingIco = path.join(ROOT, 'asset', 'y_icon_temp.ico');
-    if (fs.existsSync(existingIco)) {
-        fs.copyFileSync(existingIco, dest);
-        return dest;
-    }
     const png = fs.readFileSync(pngPath);
     fs.writeFileSync(dest, pngToIco(png));
+    const appIco = path.join(ROOT, 'asset', 'icon.ico');
+    fs.copyFileSync(dest, appIco);
     return dest;
 }
 
@@ -91,7 +88,17 @@ function findMakeAppx() {
     return which('makeappx.exe');
 }
 
+function stampExeIcon(exe) {
+    const ico = ensureSetupIcon();
+    const rcedit = path.join(ROOT, 'node_modules', 'rcedit', 'bin', process.arch === 'ia32' ? 'rcedit.exe' : 'rcedit-x64.exe');
+    if (!fs.existsSync(rcedit)) {
+        throw new Error('rcedit is missing. Run npm install.');
+    }
+    run(rcedit, [exe, '--set-icon', ico]);
+}
+
 function buildUnpacked() {
+    ensureSetupIcon();
     const builder = path.join(ROOT, 'node_modules', '.bin', 'electron-builder.cmd');
     const cmd = fs.existsSync(builder) ? builder : 'npx';
     const args = fs.existsSync(builder)
@@ -101,6 +108,9 @@ function buildUnpacked() {
     const unpacked = path.join(ROOT, 'dist', 'win-unpacked');
     const exe = path.join(unpacked, 'LingoLearn Phonetics.exe');
     if (!fs.existsSync(exe)) throw new Error('Unpacked app was not created at dist/win-unpacked');
+    const ico = ensureSetupIcon();
+    fs.copyFileSync(ico, path.join(unpacked, 'app.ico'));
+    stampExeIcon(exe);
     return unpacked;
 }
 
