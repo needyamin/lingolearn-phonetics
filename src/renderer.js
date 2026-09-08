@@ -68,17 +68,39 @@ function parseIpaDict(content) {
     console.log(`Loaded ${dictionarySize} words`);
 }
 
+function addBanglaMeaning(word, meaning) {
+    const key = String(word || '').toLowerCase().trim();
+    const value = String(meaning || '').trim();
+    if (!key || !value) return;
+    if (!banglaDict.has(key)) banglaDict.set(key, []);
+    const arr = banglaDict.get(key);
+    if (!arr.includes(value)) arr.push(value);
+}
+
 function parseBanglaDict(content) {
-    const lines = content.split('\n');
+    const trimmed = String(content || '').trim();
+    if (!trimmed) return;
+
+    if (trimmed.startsWith('[')) {
+        try {
+            const rows = JSON.parse(trimmed);
+            if (Array.isArray(rows)) {
+                for (const row of rows) {
+                    addBanglaMeaning(row && row.en, row && row.bn);
+                }
+                banglaDictSize = banglaDict.size;
+                console.log(`Loaded Bangla ${banglaDictSize} words`);
+                return;
+            }
+        } catch (e) {
+            console.error('Failed to parse E2B JSON dictionary', e);
+        }
+    }
+
+    const lines = trimmed.split('\n');
     for (const line of lines) {
         const parts = line.trim().split('|').filter(Boolean);
-        if (parts.length >= 2) {
-            const word = parts[0].toLowerCase().trim();
-            const meaning = parts[1].trim();
-            if (!banglaDict.has(word)) banglaDict.set(word, []);
-            const arr = banglaDict.get(word);
-            if (!arr.includes(meaning)) arr.push(meaning);
-        }
+        if (parts.length >= 2) addBanglaMeaning(parts[0], parts[1]);
     }
     banglaDictSize = banglaDict.size;
     console.log(`Loaded Bangla ${banglaDictSize} words`);
@@ -293,6 +315,9 @@ function setupEventListeners() {
         banglaDisplay.textContent = '';
         textInput.focus();
     };
+
+    const btnPractice = document.getElementById('btn-practice');
+    if (btnPractice) btnPractice.onclick = () => window.electronAPI.openPractice();
 
     btnSettings.onclick = () => settingsModal.style.display = "block";
     closeModal.onclick = () => settingsModal.style.display = "none";

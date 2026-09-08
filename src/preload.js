@@ -12,5 +12,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onShowSettings: (callback) => ipcRenderer.on('show-settings', (_event) => callback()),
     onShowAbout: (callback) => ipcRenderer.on('show-about', (_event) => callback()),
     onDictsUpdated: (callback) => ipcRenderer.on('dicts-updated', () => callback()),
-    openExternal: (url) => ipcRenderer.invoke('open-external', url)
+    openExternal: (url) => ipcRenderer.invoke('open-external', url),
+    openPractice: () => ipcRenderer.invoke('open-practice'),
+    startPracticeSpeech: (payload) => ipcRenderer.invoke('start-practice-speech', payload),
+    stopPracticeSpeech: () => ipcRenderer.invoke('stop-practice-speech'),
+    onPracticeSpeech: (callback) => ipcRenderer.on('practice-speech', (_event, value) => callback(value)),
+    getOrtWasmDir: () => ipcRenderer.invoke('get-ort-wasm-dir')
 });

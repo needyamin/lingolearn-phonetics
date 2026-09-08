@@ -1,7 +1,9 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, clipboard, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, clipboard, shell, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const { spawn } = require('child_process');
+const { pathToFileURL } = require('url');
 const Store = require('electron-store');
 
 let autoUpdater;
@@ -11,9 +13,11 @@ if (app.isPackaged) {
 
 const store = new Store();
 let mainWindow;
+let practiceWindow;
 let tray;
 let lastClipboardText = '';
 let clipboardInterval;
+let practiceSpeechProcess = null;
 
 // Default settings
 const defaultSettings = {
@@ -35,7 +39,7 @@ if (!store.has('ttsEnabled')) {
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 650,
-        height: 750,
+        height: 820,
         resizable: true,
         icon: path.join(__dirname, '../asset/icon.png'),
         webPreferences: {
@@ -131,6 +135,137 @@ function createWindow() {
     Menu.setApplicationMenu(menu);
 }
 
+function openPracticeWindow() {
+    if (practiceWindow && !practiceWindow.isDestroyed()) {
+        practiceWindow.show();
+        practiceWindow.focus();
+        return;
+    }
+
+    practiceWindow = new BrowserWindow({
+        width: 720,
+        height: 780,
+        minWidth: 560,
+        minHeight: 680,
+        title: 'English Practice',
+        icon: path.join(__dirname, '../asset/icon.png'),
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: false
+        },
+        autoHideMenuBar: false
+    });
+
+    practiceWindow.setMenu(null);
+    practiceWindow.loadFile(path.join(__dirname, 'practice.html'));
+
+    practiceWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+        return { action: 'deny' };
+    });
+
+    practiceWindow.on('closed', () => {
+        stopPracticeSpeech();
+        practiceWindow = null;
+    });
+}
+
+function getAsrScriptPath() {
+    const fromSrc = path.join(__dirname, 'windows-asr.ps1');
+    if (fromSrc.includes(`${path.sep}app.asar${path.sep}`) || fromSrc.includes('/app.asar/')) {
+        return fromSrc.replace(`${path.sep}app.asar${path.sep}`, `${path.sep}app.asar.unpacked${path.sep}`)
+            .replace('/app.asar/', '/app.asar.unpacked/');
+    }
+    return fromSrc;
+}
+
+function sendPracticeSpeech(kind, text) {
+    if (practiceWindow && !practiceWindow.isDestroyed()) {
+        practiceWindow.webContents.send('practice-speech', { kind, text: text || '' });
+    }
+}
+
+function stopPracticeSpeech() {
+    if (!practiceSpeechProcess) return;
+    const child = practiceSpeechProcess;
+    practiceSpeechProcess = null;
+    try {
+        if (process.platform === 'win32' && child.pid) {
+            spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true });
+        } else {
+            child.kill();
+        }
+    } catch (_) {}
+}
+
+function startPracticeSpeech(payload) {
+    stopPracticeSpeech();
+
+    if (process.platform !== 'win32') {
+        return { ok: false, error: 'Offline speaking practice currently works on Windows.' };
+    }
+
+    const scriptPath = getAsrScriptPath();
+    if (!fs.existsSync(scriptPath)) {
+        return { ok: false, error: 'Speech helper script was not found.' };
+    }
+
+    const encoded = Buffer.from(JSON.stringify(payload || {}), 'utf8').toString('base64');
+    const child = spawn('powershell.exe', [
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', scriptPath,
+        '-PayloadB64', encoded
+    ], {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    practiceSpeechProcess = child;
+    let buffer = '';
+
+    const consume = (chunk) => {
+        buffer += chunk;
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop();
+        for (const line of lines) {
+            if (!line) continue;
+            const idx = line.indexOf(':');
+            if (idx < 0) continue;
+            sendPracticeSpeech(line.slice(0, idx), line.slice(idx + 1));
+        }
+    };
+
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', consume);
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (data) => {
+        const msg = String(data).trim();
+        if (msg) console.error('practice-asr', msg);
+    });
+    child.on('error', (err) => {
+        sendPracticeSpeech('ERROR', err.message || 'Could not start speech recognition.');
+    });
+    child.on('exit', () => {
+        if (practiceSpeechProcess === child) {
+            practiceSpeechProcess = null;
+            sendPracticeSpeech('ENDED', '');
+        }
+    });
+
+    return { ok: true };
+}
+
+function grantMediaPermissions() {
+    const allowed = new Set(['media', 'microphone', 'audioCapture']);
+    session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+        callback(allowed.has(permission));
+    });
+    session.defaultSession.setPermissionCheckHandler(() => true);
+}
+
 function createTray() {
     const iconPath = path.join(__dirname, '../asset/icon.png');
     tray = new Tray(iconPath);
@@ -163,6 +298,7 @@ function startClipboardMonitor() {
 }
 
 app.whenReady().then(() => {
+    grantMediaPermissions();
     createWindow();
     createTray();
     startClipboardMonitor();
@@ -213,7 +349,7 @@ function readDict(userPath, bundledPath) {
 function fetchDictUpdates() {
     const files = [
         { name: 'cmudict-0.7b-ipa.txt', bundled: path.join(__dirname, '../asset/cmudict-0.7b-ipa.txt') },
-        { name: 'bangla_dictionary.txt', bundled: path.join(__dirname, '../asset/bangla_dictionary.txt') }
+        { name: 'E2Bdatabase.json', bundled: path.join(__dirname, '../asset/E2Bdatabase.json') }
     ];
     files.forEach(({ name, bundled }) => {
         const userPath = getDictPath(name);
@@ -234,5 +370,24 @@ function fetchDictUpdates() {
 }
 
 ipcMain.handle('get-ipa-dict', async () => readDict(getDictPath('cmudict-0.7b-ipa.txt'), path.join(__dirname, '../asset/cmudict-0.7b-ipa.txt')));
-ipcMain.handle('get-bangla-dict', async () => readDict(getDictPath('bangla_dictionary.txt'), path.join(__dirname, '../asset/bangla_dictionary.txt')));
+ipcMain.handle('get-bangla-dict', async () => {
+    const jsonDict = readDict(getDictPath('E2Bdatabase.json'), path.join(__dirname, '../asset/E2Bdatabase.json'));
+    if (jsonDict && jsonDict.trim().startsWith('[')) return jsonDict;
+    return readDict(getDictPath('bangla_dictionary.txt'), path.join(__dirname, '../asset/bangla_dictionary.txt'));
+});
 ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
+ipcMain.handle('open-practice', () => openPracticeWindow());
+ipcMain.handle('get-ort-wasm-dir', () => {
+    const dir = path.join(__dirname, '../node_modules/onnxruntime-web/dist');
+    const unpacked = String(dir)
+        .replace(`${path.sep}app.asar${path.sep}`, `${path.sep}app.asar.unpacked${path.sep}`)
+        .replace('/app.asar/', '/app.asar.unpacked/');
+    let href = pathToFileURL(unpacked).href;
+    if (!href.endsWith('/')) href += '/';
+    return href;
+});
+ipcMain.handle('start-practice-speech', (_event, payload) => startPracticeSpeech(payload));
+ipcMain.handle('stop-practice-speech', () => {
+    stopPracticeSpeech();
+    return { ok: true };
+});

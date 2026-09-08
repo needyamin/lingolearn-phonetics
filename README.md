@@ -1,16 +1,28 @@
 # LingoLearn Phonetics
 
-LingoLearn helps students master English pronunciation using real voice output, IPA phonetics, and a built-in English–Bangla dictionary.
+LingoLearn is a desktop app for English pronunciation. Look up a word to hear it, see IPA phonetics and a Bangla meaning, or open **English Practice** and read short paragraphs out loud.
 
 <img width="638" height="738" alt="Image" src="https://github.com/user-attachments/assets/c2a65521-d207-408a-b4f4-5b8cafd0b6d3" />
 
 ## Features
 
-- **TTS** – Hear words/phrases with system voices
+- **TTS** – Hear words and phrases with system voices
 - **IPA** – Phonetic transcription (CMU Dict)
-- **Bangla** – English-to-Bangla meanings
-- **Clipboard** – Optional: speak/show IPA when you copy text
-- **History** – Recent words; settings for rate, volume, voice
+- **Bangla** – English-to-Bangla meanings (`asset/E2Bdatabase.json`)
+- **English Practice** – Read a lesson paragraph; the app listens and marks each word
+- **Clipboard** – Optional: speak / show IPA when you copy text
+- **History** – Recent words; settings for rate, volume, and voice
+
+## English Practice
+
+Open it with the **📖** button on the main window.
+
+1. Wait until the status says **Speech engine ready** (first run may download a local Whisper model).
+2. Optionally click **Hear it** to listen to the paragraph.
+3. Click **Start Speaking**, then read **one sentence** and **pause** for about half a second.
+4. **What you said** shows the transcript. Green words matched; red words were missed. Keep reading forward — do not repeat missed words.
+
+Speech recognition runs **on your PC** (Whisper). It does not need a Google speech API. A quiet room and a mic close to your mouth work best. If the local model cannot load, the app falls back to Windows speech recognition.
 
 ## Quick Start
 
@@ -71,9 +83,8 @@ No install needed. Needs Linux kernel 3.10+, GLIBC 2.17+, X11 or Wayland.
 
 ## Tech
 
-Electron · Web Speech API · CMU Pronouncing Dictionary · Bangla dictionary (asset)
+Electron · Web Speech TTS · Whisper (`@huggingface/transformers`, on-device) · Windows SAPI fallback · CMU Pronouncing Dictionary · Bangla dictionary (`asset/E2Bdatabase.json`)
 
 ## License
 
 ISC
-
