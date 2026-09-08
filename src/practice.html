@@ -5,70 +5,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Practice</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="practice.css">
 </head>
 
 <body class="practice-page">
-    <div class="app-container practice-container">
-        <div class="app-logo">
-            <img src="../asset/logo.png" alt="LingoLearn Phonetics" class="logo-img">
-        </div>
-        <h3>English Practice</h3>
-        <p class="subtitle">Read the paragraph out loud. Pause after each sentence so the app can show the words you said.</p>
-
-        <div class="practice-nav">
-            <button id="btn-prev" class="btn-nav" type="button">← Prev</button>
+    <div class="practice-shell">
+        <header class="practice-top">
+            <button id="btn-prev" class="btn-icon" type="button" aria-label="Previous lesson" title="Previous (←)">‹</button>
             <div class="practice-meta">
-                <span id="lesson-label">Lesson 1 of 8</span>
                 <strong id="lesson-title">A Sunny Day</strong>
+                <span id="lesson-label">1 / 8</span>
             </div>
-            <button id="btn-next" class="btn-nav" type="button">Next →</button>
+            <button id="btn-next" class="btn-icon" type="button" aria-label="Next lesson" title="Next (→)">›</button>
+        </header>
+
+        <div class="practice-progress" aria-hidden="true">
+            <div class="practice-progress-bar">
+                <div id="progress-fill" class="practice-progress-fill"></div>
+            </div>
         </div>
+        <span id="progress-label" class="sr-only">0 correct</span>
 
         <div class="practice-card">
             <p id="practice-text" class="practice-text" aria-live="polite"></p>
         </div>
 
-        <div class="heard-panel">
-            <div class="heard-head">
-                <span class="heard-label">What you said</span>
-                <span id="heard-count" class="heard-count">0 words</span>
+        <div id="heard-panel" class="heard-panel" hidden>
+            <span id="heard-count" class="heard-count" hidden>0</span>
+            <p id="heard-sentence" class="heard-sentence"></p>
+            <div id="heard-words" class="heard-words" hidden></div>
+        </div>
+
+        <div id="speak-here-cue" class="speak-here-cue is-hidden" hidden>
+            <span id="speak-here-label"></span>
+            <strong id="speak-here-word"></strong>
+        </div>
+
+        <footer class="practice-dock">
+            <div id="mic-meter" class="mic-meter" hidden>
+                <div class="mic-meter-track">
+                    <div id="mic-meter-fill" class="mic-meter-fill"></div>
+                </div>
             </div>
-            <p id="heard-sentence" class="heard-sentence" hidden></p>
-            <div id="heard-words" class="heard-words">
-                <span class="heard-empty">Read a phrase, then pause. Your exact words appear here.</span>
+            <p id="practice-status" class="practice-status">Tap Speak, then read. Pause after each sentence.</p>
+            <p id="practice-success" class="practice-success" hidden></p>
+            <div class="practice-actions">
+                <button id="btn-listen" class="btn-ghost" type="button" title="Play the paragraph">Hear</button>
+                <button id="btn-mic" class="btn-mic" type="button" title="Space">Speak</button>
+                <button id="btn-reset" class="btn-ghost" type="button" title="Clear this lesson">Reset</button>
             </div>
-        </div>
-
-        <div id="speak-here-cue" class="speak-here-cue">
-            <span class="speak-here-arrow">▶</span>
-            <span id="speak-here-label">Start reading from here</span>
-            <strong id="speak-here-word">The</strong>
-        </div>
-
-        <div id="mic-meter" class="mic-meter" hidden>
-            <span>Mic</span>
-            <div class="mic-meter-track">
-                <div id="mic-meter-fill" class="mic-meter-fill"></div>
-            </div>
-        </div>
-
-        <div class="practice-progress">
-            <div class="practice-progress-bar">
-                <div id="progress-fill" class="practice-progress-fill"></div>
-            </div>
-            <span id="progress-label">0 / 0 words correct</span>
-        </div>
-
-        <p id="practice-status" class="practice-status">Click Start Speaking, then read the paragraph.</p>
-        <p id="practice-success" class="practice-success" hidden>Well done! You read every word correctly.</p>
-
-        <div class="button-group practice-actions">
-            <button id="btn-listen" class="btn-speak" type="button"><span>🔊</span> Hear it</button>
-            <button id="btn-mic" class="btn-mic" type="button"><span>🎤</span> Start Speaking</button>
-            <button id="btn-reset" class="btn-reset" type="button"><span>↺</span> Reset</button>
-        </div>
+        </footer>
     </div>
 
     <script type="module" src="practice.js"></script>

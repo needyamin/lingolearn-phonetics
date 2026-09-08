@@ -1,4 +1,4 @@
-const LESSONS = [
+const FALLBACK_LESSONS = [
     {
         title: 'A Sunny Day',
         text: 'The sun is bright today. I like to walk in the park. Birds sing in the trees. It is a happy day.'
@@ -33,12 +33,16 @@ const LESSONS = [
     }
 ];
 
+let LESSONS = FALLBACK_LESSONS;
+const READY_HINT = 'Tap Speak, then read. Pause after each sentence.';
+
 const practiceText = document.getElementById('practice-text');
 const lessonLabel = document.getElementById('lesson-label');
 const lessonTitle = document.getElementById('lesson-title');
 const progressFill = document.getElementById('progress-fill');
 const progressLabel = document.getElementById('progress-label');
 const heardWordsEl = document.getElementById('heard-words');
+const heardPanel = document.getElementById('heard-panel');
 const heardCountEl = document.getElementById('heard-count');
 const statusEl = document.getElementById('practice-status');
 const successEl = document.getElementById('practice-success');
@@ -183,8 +187,8 @@ function updateProgress() {
     successEl.classList.toggle('is-mixed', complete && wrong > 0);
     if (complete) {
         successEl.textContent = wrong === 0
-            ? 'Well done! You read every word correctly.'
-            : `Finished. ${correct} correct, ${wrong} missed. Keep going to the next lesson — no need to repeat missed words.`;
+            ? 'Done. Every word matched.'
+            : `Done. ${correct} correct, ${wrong} missed.`;
         if (listening) stopListening();
         return;
     }
@@ -193,9 +197,9 @@ function updateProgress() {
     if (listening && current >= 0) {
         const nextWord = displayWord(tokens[current]);
         if (wrong > 0 && (marks.filter(Boolean).pop() === 'wrong' || marks.filter(Boolean).pop() === 'missed')) {
-            setStatus(`Missed a word. Keep reading from “${nextWord}” — do not go back.`, 'listening');
+            setStatus(`Missed. Continue from “${nextWord}”.`, 'listening');
         } else {
-            setStatus(`Listening… keep reading from “${nextWord}”`, 'listening');
+            setStatus(`Listening from “${nextWord}”`, 'listening');
         }
     }
 }
@@ -265,7 +269,11 @@ function displaySpokenWords(text) {
 
 function renderHeardWords(spoken) {
     const chips = heardSentence ? displaySpokenWords(heardSentence) : spoken;
-    if (heardCountEl) heardCountEl.textContent = `${chips.length} word${chips.length === 1 ? '' : 's'}`;
+    if (heardPanel) heardPanel.hidden = !heardSentence && !chips.length;
+    if (heardCountEl) {
+        heardCountEl.hidden = true;
+        heardCountEl.textContent = String(chips.length);
+    }
     if (heardSentenceEl) {
         heardSentenceEl.textContent = heardSentence;
         heardSentenceEl.hidden = !heardSentence;
@@ -327,11 +335,11 @@ function loadLesson(index) {
     spokenCursor = 0;
     spokenLog = [];
     heardSentence = '';
-    lessonLabel.textContent = `Lesson ${lessonIndex + 1} of ${LESSONS.length}`;
+    lessonLabel.textContent = `${lessonIndex + 1} / ${LESSONS.length}`;
     lessonTitle.textContent = lesson.title;
     renderHeardWords([]);
     successEl.hidden = true;
-    setStatus('Click Start Speaking, then read the paragraph.');
+    setStatus(READY_HINT);
     renderParagraph();
     updateProgress();
 }
@@ -355,7 +363,7 @@ function lessonPayload() {
 function setListeningUi(isOn) {
     listening = isOn;
     btnMic.classList.toggle('listening', isOn);
-    btnMic.innerHTML = isOn ? '<span>⏹</span> Stop' : '<span>🎤</span> Start Speaking';
+    btnMic.textContent = isOn ? 'Stop' : 'Speak';
     if (micMeter) micMeter.hidden = !isOn;
     if (!isOn) setMicLevel(0);
 }
@@ -386,7 +394,7 @@ async function startWithWhisper() {
     });
     engineMode = 'whisper';
     const word = displayWord(tokens[currentWordIndex()]);
-    setStatus(word ? `Listening… read from “${word}”, then pause briefly.` : 'Listening… read a sentence, then pause.', 'listening');
+    setStatus(word ? `Listening from “${word}”` : 'Listening…', 'listening');
 }
 
 async function startWithSapi() {
@@ -411,7 +419,7 @@ async function startListening() {
 
     try {
         if (!whisperReady) {
-            setStatus('Preparing speech engine… first use may download a model.', 'listening');
+            setStatus('Preparing speech… first use may download a model.', 'listening');
             try {
                 const asr = await getWhisperApi();
                 await asr.loadWhisperAsr((message) => setStatus(message, 'listening'));
@@ -446,7 +454,7 @@ function stopListening() {
     if (!wasListening) return;
     if (!successEl.hidden) return;
     if (statusEl.classList.contains('is-error')) return;
-    setStatus('Click Start Speaking, then read the paragraph.');
+    setStatus(READY_HINT);
 }
 
 window.electronAPI.onPracticeSpeech((event) => {
@@ -454,7 +462,7 @@ window.electronAPI.onPracticeSpeech((event) => {
     if (event.kind === 'READY') {
         const current = currentWordIndex();
         const word = current >= 0 ? displayWord(tokens[current]) : '';
-        setStatus(word ? `Listening… read the paragraph from “${word}”` : 'Listening… read the paragraph now.', 'listening');
+        setStatus(word ? `Listening from “${word}”` : 'Listening…', 'listening');
         return;
     }
     if (event.kind === 'ERROR') {
@@ -469,7 +477,7 @@ window.electronAPI.onPracticeSpeech((event) => {
             setListeningUi(false);
             engineMode = 'none';
             if (!successEl.hidden) return;
-            setStatus('Microphone stopped. Click Start Speaking to try again.', 'error');
+            setStatus('Mic stopped. Tap Speak to try again.', 'error');
         }
         return;
     }
@@ -487,24 +495,75 @@ btnMic.onclick = () => {
     else startListening();
 };
 
+window.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const tag = event.target && event.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (event.key === ' ' && !event.repeat) {
+        event.preventDefault();
+        if (listening) stopListening();
+        else startListening();
+        return;
+    }
+    if (event.key === 'Escape' && listening) {
+        event.preventDefault();
+        stopListening();
+        return;
+    }
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        loadLesson(lessonIndex - 1);
+        return;
+    }
+    if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        loadLesson(lessonIndex + 1);
+    }
+});
+
 window.addEventListener('beforeunload', () => {
     stopListening();
     speechSynthesis.cancel();
 });
 
-loadLesson(0);
-setStatus('Preparing speech engine…', 'listening');
-getWhisperApi()
-    .then((asr) => asr.loadWhisperAsr((message) => {
-        if (!listening) setStatus(message, 'listening');
-    }))
-    .then(() => {
-        whisperReady = true;
-        if (!listening) setStatus('Speech engine ready. Click Start Speaking, then read the paragraph.');
-    })
-    .catch((err) => {
-        console.error(err);
-        whisperReady = false;
-        whisperApi = null;
-        if (!listening) setStatus('Click Start Speaking, then read the paragraph.');
+function useLessons(list) {
+    if (!Array.isArray(list) || !list.length) return false;
+    const next = list.filter((item) => item && item.title && item.text);
+    if (!next.length) return false;
+    LESSONS = next;
+    return true;
+}
+
+async function bootPractice() {
+    try {
+        const remote = await window.electronAPI.getPracticeLessons();
+        useLessons(remote);
+    } catch (_) {}
+
+    loadLesson(0);
+    setStatus('Preparing speech…', 'listening');
+    getWhisperApi()
+        .then((asr) => asr.loadWhisperAsr((message) => {
+            if (!listening) setStatus(message, 'listening');
+        }))
+        .then(() => {
+            whisperReady = true;
+            if (!listening) setStatus(READY_HINT);
+        })
+        .catch((err) => {
+            console.error(err);
+            whisperReady = false;
+            whisperApi = null;
+            if (!listening) setStatus(READY_HINT);
+        });
+
+    window.electronAPI.onMaterialsUpdated?.(() => {
+        if (listening) return;
+        window.electronAPI.getPracticeLessons().then((list) => {
+            if (!useLessons(list)) return;
+            loadLesson(Math.min(lessonIndex, LESSONS.length - 1));
+        }).catch(() => {});
     });
+}
+
+bootPractice();

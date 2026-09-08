@@ -371,19 +371,29 @@ function setupEventListeners() {
         }
     });
 
+    window.electronAPI.onCopyBangla?.(() => {
+        if (banglaDisplay.textContent) navigator.clipboard.writeText(banglaDisplay.textContent);
+    });
+
+    window.electronAPI.onShowSettings?.(() => {
+        settingsModal.style.display = 'block';
+    });
+
     // About Modal Logic
     const aboutModal = document.getElementById('about-modal');
     const closeAbout = document.querySelector('.close-about');
-    const btnCloseAbout = document.getElementById('btn-close-about');
 
     function closeAboutModal() {
         aboutModal.style.display = "none";
     }
 
     if (closeAbout) closeAbout.onclick = closeAboutModal;
-    if (btnCloseAbout) btnCloseAbout.onclick = closeAboutModal;
-    const aboutGithub = document.getElementById('about-github');
-    if (aboutGithub) aboutGithub.onclick = (e) => { e.preventDefault(); window.electronAPI.openExternal('https://github.com/needyamin'); };
+    aboutModal.querySelectorAll('[data-url]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.electronAPI.openExternal(link.dataset.url);
+        });
+    });
 
     // Window click to close modals
     window.onclick = (event) => {
@@ -400,13 +410,140 @@ function setupEventListeners() {
     });
 
     window.electronAPI.onDictsUpdated?.(async () => {
-        ipaDict.clear();
-        banglaDict.clear();
-        const dictContent = await window.electronAPI.getIpaDict();
-        if (dictContent) parseIpaDict(dictContent);
-        const banglaContent = await window.electronAPI.getBanglaDict();
-        if (banglaContent) parseBanglaDict(banglaContent);
-        updateSettingsUI();
+        setTimeout(async () => {
+            ipaDict.clear();
+            banglaDict.clear();
+            const dictContent = await window.electronAPI.getIpaDict();
+            if (dictContent) parseIpaDict(dictContent);
+            const banglaContent = await window.electronAPI.getBanglaDict();
+            if (banglaContent) parseBanglaDict(banglaContent);
+            updateSettingsUI();
+        }, 250);
+    });
+
+    setupUpdateBanner();
+    setupAppMenu();
+}
+
+function setupAppMenu() {
+    const bar = document.getElementById('app-menubar');
+    if (!bar) return;
+    const roots = [...bar.querySelectorAll('.menu-root')];
+    const closeAll = () => roots.forEach((el) => el.classList.remove('is-open'));
+
+    bar.querySelectorAll('.menu-btn').forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (btn.dataset.action) {
+                closeAll();
+                runMenuAction(btn.dataset.action);
+                return;
+            }
+            const root = btn.closest('.menu-root');
+            const open = root.classList.contains('is-open');
+            closeAll();
+            if (!open) root.classList.add('is-open');
+        });
+    });
+
+    roots.forEach((root) => {
+        root.addEventListener('mouseenter', () => {
+            if (!roots.some((item) => item.classList.contains('is-open'))) return;
+            if (!root.querySelector('.menu-panel')) return;
+            closeAll();
+            root.classList.add('is-open');
+        });
+    });
+
+    document.addEventListener('click', closeAll);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeAll();
+    });
+
+    bar.addEventListener('click', (event) => {
+        const item = event.target.closest('[data-action]');
+        if (!item) return;
+        closeAll();
+        runMenuAction(item.dataset.action);
+    });
+}
+
+function runMenuAction(action) {
+    if (action === 'clear') btnClear.click();
+    else if (action === 'practice') window.electronAPI.openPractice();
+    else if (action === 'settings') settingsModal.style.display = 'block';
+    else if (action === 'exit') window.electronAPI.quitApp();
+    else if (action === 'zoomIn') window.electronAPI.setZoom('in');
+    else if (action === 'zoomOut') window.electronAPI.setZoom('out');
+    else if (action === 'zoomReset') window.electronAPI.setZoom('reset');
+    else if (action === 'fullscreen') window.electronAPI.toggleFullScreen();
+    else if (action === 'updates') window.electronAPI.checkAppUpdate().catch(() => {});
+    else if (action === 'privacy') window.electronAPI.openExternal('https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md');
+    else if (action === 'issue') window.electronAPI.openExternal('https://github.com/needyamin/lingoLearn-phonetics/issues');
+    else if (action === 'about') {
+        const aboutModal = document.getElementById('about-modal');
+        if (aboutModal) aboutModal.style.display = 'block';
+    }
+}
+
+function setupUpdateBanner() {
+    const banner = document.getElementById('update-banner');
+    const text = document.getElementById('update-banner-text');
+    const action = document.getElementById('update-banner-action');
+    const closeBtn = document.getElementById('update-banner-close');
+    if (!banner || !text) return;
+
+    let hideTimer = null;
+    const showBanner = (message, { ready = false, materials = false, current = false, error = false, actionLabel = '' } = {}) => {
+        banner.hidden = false;
+        banner.classList.toggle('is-ready', ready);
+        banner.classList.toggle('is-materials', materials && !ready);
+        banner.classList.toggle('is-current', current);
+        banner.classList.toggle('is-error', error);
+        text.textContent = message;
+        if (action) {
+            action.hidden = !actionLabel;
+            action.textContent = actionLabel || 'Restart';
+        }
+    };
+    const hideBanner = () => {
+        banner.hidden = true;
+        if (action) action.hidden = true;
+    };
+
+    if (action) action.onclick = () => window.electronAPI.installAppUpdate();
+    if (closeBtn) closeBtn.onclick = hideBanner;
+
+    window.electronAPI.onAppUpdate?.((event) => {
+        if (!event) return;
+        clearTimeout(hideTimer);
+        if (event.kind === 'checking') showBanner('Checking for updates…');
+        if (event.kind === 'available') showBanner(`Downloading version ${event.version || ''}…`);
+        if (event.kind === 'downloading') showBanner(`Updating in the background… ${event.percent || 0}%`);
+        if (event.kind === 'ready') showBanner(`Version ${event.version || ''} is ready.`, { ready: true, actionLabel: 'Restart' });
+        if (event.kind === 'current') {
+            const version = event.version ? ` v${event.version}` : '';
+            showBanner(`You're up to date.${version}`, { current: true });
+            hideTimer = setTimeout(hideBanner, 4000);
+        }
+        if (event.kind === 'materials') {
+            showBanner('Dictionaries and practice lessons updated.', { materials: true });
+            hideTimer = setTimeout(hideBanner, 4000);
+        }
+        if (event.kind === 'error') {
+            showBanner(event.message || 'Could not check for updates.', { error: true });
+            hideTimer = setTimeout(hideBanner, 5000);
+        }
+        if (event.kind === 'idle' && !banner.classList.contains('is-ready')) hideBanner();
+    });
+
+    window.electronAPI.onMaterialsUpdated?.(() => {
+        if (banner.classList.contains('is-ready')) return;
+        showBanner('Dictionaries and practice lessons updated.', { materials: true });
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            if (banner.classList.contains('is-materials')) hideBanner();
+        }, 4000);
     });
 }
 

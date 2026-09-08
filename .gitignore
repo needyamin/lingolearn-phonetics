@@ -21,4 +21,7 @@ Desktop.ini
 *.exe
 *.dmg
 *.zip
+*.msix
+*.appx
 asset/icon.ico
+installer/icon.ico

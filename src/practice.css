@@ -1,249 +1,100 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+html,
 body.practice-page {
-    align-items: stretch;
-    justify-content: stretch;
+    height: 100%;
+    margin: 0;
+}
+
+body.practice-page {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #111827;
+    background: #fff;
     overflow: hidden;
-    height: 100vh;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+button {
+    font-family: inherit;
+}
+
+.practice-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     min-height: 0;
-    padding: 0;
+    padding: 14px 20px 16px;
 }
 
-.practice-container {
-    width: 100%;
-    max-width: none;
-    height: 100vh;
-    min-height: 0;
-    border-radius: 0;
-    padding: 0 20px 14px;
-    overflow: hidden;
-}
-
-body.practice-page .app-logo {
-    width: auto;
-    left: auto;
-    margin: 0 -20px 8px;
-    padding: 8px 20px;
-}
-
-body.practice-page .logo-img {
-    max-height: 44px;
-}
-
-body.practice-page h3 {
-    font-size: 20px;
-    margin: 0 0 2px;
-    flex-shrink: 0;
-}
-
-body.practice-page .subtitle {
-    margin: 0 0 8px;
-    font-size: 13px;
-    flex-shrink: 0;
-}
-
-.practice-nav {
+.practice-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: 10px;
     flex-shrink: 0;
 }
 
 .practice-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    text-align: center;
+    flex: 1;
     min-width: 0;
-}
-
-#lesson-label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: var(--secondary-text);
+    text-align: center;
 }
 
 #lesson-title {
-    font-size: 16px;
-    color: var(--text-color);
+    display: block;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: #111827;
 }
 
-.btn-nav {
-    background: #f3f4f6;
-    color: var(--text-color);
-    padding: 8px 12px;
-    font-size: 13px;
-}
-
-.btn-nav:hover {
-    background: var(--accent-color);
-    color: var(--primary-color);
-}
-
-.practice-card {
-    background: var(--accent-color);
-    border-radius: var(--border-radius);
-    padding: 28px 18px 12px;
-    min-height: 0;
-    flex: 1;
-    margin-bottom: 8px;
-    overflow: auto;
-}
-
-.practice-text {
-    margin: 0;
-    font-size: 20px;
-    line-height: 1.65;
-    color: var(--text-color);
-    -webkit-user-select: text;
-    user-select: text;
-}
-
-.practice-word {
-    display: inline;
-    padding: 2px 3px;
-    border-radius: 6px;
-    color: var(--text-color);
-    transition: color 0.18s ease, background-color 0.18s ease;
-}
-
-.practice-word.current {
-    display: inline-block;
-    position: relative;
-    background: #f59e0b;
-    color: #1f2937;
-    font-weight: 800;
-    padding: 2px 10px;
-    border-radius: 8px;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.28);
-    animation: speakHerePulse 1.2s ease-in-out infinite;
-}
-
-.practice-word.current::before {
-    content: '▶ Keep reading';
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 6px);
-    transform: translateX(-50%);
+#lesson-label {
+    display: block;
+    margin-top: 1px;
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    background: #d97706;
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 999px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9ca3af;
 }
 
-@keyframes speakHerePulse {
-    0%, 100% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.28); }
-    50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.12); }
-}
-
-.speak-here-cue {
-    display: flex;
+.btn-icon {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0 0 8px;
-    padding: 8px 12px;
-    background: #fff7ed;
-    border: 2px solid #f59e0b;
-    border-radius: 10px;
-    color: #92400e;
-    font-size: 14px;
-    font-weight: 600;
-    flex-shrink: 0;
+    padding: 0;
 }
 
-.speak-here-cue.is-hidden {
-    display: none;
-}
-
-.speak-here-arrow {
-    color: #d97706;
-    font-size: 18px;
-}
-
-#speak-here-word {
-    font-size: 20px;
-    color: #1f2937;
-    background: #fde68a;
-    padding: 2px 10px;
-    border-radius: 8px;
-}
-
-.mic-meter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--secondary-text);
-    flex-shrink: 0;
-}
-
-.mic-meter-track {
-    flex: 1;
-    height: 8px;
+.btn-icon:hover {
     background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-}
-
-.mic-meter-fill {
-    width: 0;
-    height: 100%;
-    background: var(--success-color);
-    border-radius: 999px;
-    transition: width 0.08s linear;
-}
-
-.mic-meter-fill.is-hot {
-    background: #f59e0b;
-}
-
-.practice-word.correct {
-    color: #047857;
-    background: #d1fae5;
-    box-shadow: none;
-}
-
-.practice-word.wrong {
-    color: #b91c1c;
-    background: #fee2e2;
-    box-shadow: none;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 3px;
-}
-
-.practice-word.missed {
-    color: #b91c1c;
-    background: #fee2e2;
-    box-shadow: none;
-    text-decoration: line-through;
-    text-decoration-thickness: 2px;
 }
 
 .practice-progress {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 8px;
     flex-shrink: 0;
+    margin: 12px 0 8px;
 }
 
 .practice-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #e5e7eb;
+    height: 3px;
+    background: #f3f4f6;
     border-radius: 999px;
     overflow: hidden;
 }
@@ -251,7 +102,7 @@ body.practice-page .subtitle {
 .practice-progress-fill {
     width: 0;
     height: 100%;
-    background: var(--success-color);
+    background: #10b981;
     border-radius: 999px;
     transition: width 0.2s ease, background-color 0.2s ease;
 }
@@ -260,143 +111,192 @@ body.practice-page .subtitle {
     background: #f59e0b;
 }
 
-#progress-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--secondary-text);
-    text-align: center;
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.practice-card {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 6px 2px 8px;
+}
+
+.practice-text {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.7;
+    color: #111827;
+    letter-spacing: -0.01em;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.practice-word {
+    display: inline;
+    padding: 1px 1px;
+    border-radius: 3px;
+}
+
+.practice-word.current {
+    background: #fff7ed;
+    color: #9a3412;
+    box-shadow: inset 0 -2px 0 #f59e0b;
+    font-weight: 650;
+}
+
+.practice-word.correct {
+    color: #047857;
+}
+
+.practice-word.wrong,
+.practice-word.missed {
+    color: #b91c1c;
+}
+
+.practice-word.missed {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    opacity: 0.85;
+}
+
+.speak-here-cue {
+    display: none !important;
 }
 
 .heard-panel {
     flex-shrink: 0;
     margin: 0 0 8px;
-    padding: 10px 12px;
-    background: #111827;
-    border-radius: 10px;
-    color: #f9fafb;
-}
-
-.heard-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.heard-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: #9ca3af;
 }
 
 .heard-count {
-    font-size: 11px;
-    font-weight: 700;
-    color: #6ee7b7;
+    display: none;
 }
 
 .heard-sentence {
-    margin: 0 0 8px;
-    color: #f9fafb;
-    font-size: 15px;
-    font-weight: 600;
+    margin: 0;
+    font-size: 13px;
     line-height: 1.45;
+    color: #6b7280;
     -webkit-user-select: text;
     user-select: text;
 }
 
 .heard-words {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-height: 56px;
-    overflow-y: auto;
-    -webkit-user-select: text;
-    user-select: text;
+    display: none;
 }
 
-.heard-empty {
-    color: #9ca3af;
-    font-size: 13px;
-    font-style: italic;
-}
-
-.heard-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: #374151;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.heard-chip.is-latest {
-    background: #10b981;
-    color: #042f1e;
-}
-
-.practice-status {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: var(--secondary-text);
-    text-align: center;
+.practice-dock {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mic-meter {
+    margin: 0;
+}
+
+.mic-meter-track {
+    height: 3px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.mic-meter-fill {
+    width: 0;
+    height: 100%;
+    background: #10b981;
+    border-radius: 999px;
+    transition: width 0.08s linear;
+}
+
+.mic-meter-fill.is-hot {
+    background: #f59e0b;
+}
+
+.practice-status,
+.practice-success {
+    margin: 0;
+    min-height: 18px;
+    font-size: 13px;
+    text-align: center;
+    color: #6b7280;
 }
 
 .practice-status.is-error {
-    color: var(--error-color);
+    color: #dc2626;
 }
 
 .practice-status.is-listening {
     color: #b45309;
-    font-weight: 600;
 }
 
 .practice-success {
-    margin: 0 0 8px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 700;
+    font-weight: 650;
     color: #047857;
-    flex-shrink: 0;
 }
 
 .practice-success.is-mixed {
     color: #b45309;
 }
 
+.practice-dock:has(#practice-success:not([hidden])) #practice-status {
+    display: none;
+}
+
 .practice-actions {
-    margin-top: auto;
-    flex-wrap: wrap;
-    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-ghost,
+.btn-mic {
+    border: none;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 650;
+    cursor: pointer;
+    padding: 9px 16px;
+}
+
+.btn-ghost {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-ghost:hover {
+    background: #e5e7eb;
 }
 
 .btn-mic {
-    background-color: var(--success-color);
-    color: white;
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+    min-width: 112px;
+    background: #111827;
+    color: #fff;
 }
 
 .btn-mic:hover {
-    background-color: #059669;
-    transform: translateY(-1px);
+    background: #1f2937;
 }
 
 .btn-mic.listening {
-    background-color: #f59e0b;
-    animation: pulse 1.5s infinite;
+    background: #f59e0b;
+    color: #111827;
 }
 
-.btn-reset {
-    background: #f3f4f6;
-    color: var(--text-color);
-}
-
-.btn-reset:hover {
-    background: #e5e7eb;
+.btn-icon:focus-visible,
+.btn-ghost:focus-visible,
+.btn-mic:focus-visible {
+    outline: 2px solid #111827;
+    outline-offset: 2px;
 }

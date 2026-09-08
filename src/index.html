@@ -9,12 +9,54 @@
 </head>
 
 <body>
+    <nav class="app-menubar" id="app-menubar">
+        <div class="menu-root">
+            <button type="button" class="menu-btn" data-menu="file">File</button>
+            <div class="menu-panel" data-panel="file">
+                <button type="button" data-action="clear">Clear <span>Ctrl+K</span></button>
+                <button type="button" data-action="practice">Practice</button>
+                <hr>
+                <button type="button" data-action="settings">Settings… <span>Ctrl+,</span></button>
+                <hr>
+                <button type="button" data-action="exit">Exit</button>
+            </div>
+        </div>
+        <div class="menu-root">
+            <button type="button" class="menu-btn" data-menu="view">View</button>
+            <div class="menu-panel" data-panel="view">
+                <button type="button" data-action="zoomIn">Zoom In <span>Ctrl++</span></button>
+                <button type="button" data-action="zoomOut">Zoom Out <span>Ctrl+-</span></button>
+                <button type="button" data-action="zoomReset">Actual Size <span>Ctrl+0</span></button>
+                <hr>
+                <button type="button" data-action="fullscreen">Full Screen <span>F11</span></button>
+            </div>
+        </div>
+        <div class="menu-root">
+            <button type="button" class="menu-btn" data-menu="help">Help</button>
+            <div class="menu-panel" data-panel="help">
+                <button type="button" data-action="updates">Check for Updates</button>
+                <hr>
+                <button type="button" data-action="privacy">Privacy Policy</button>
+                <button type="button" data-action="issue">Report Issue</button>
+            </div>
+        </div>
+        <div class="menu-root">
+            <button type="button" class="menu-btn" data-action="about">About</button>
+        </div>
+    </nav>
     <div class="app-container">
         <div class="app-logo">
             <img src="../asset/logo.png" alt="LingoLearn Phonetics" class="logo-img">
             <div class="toolbar">
                 <button id="btn-practice" class="btn-toolbar" title="English Practice">📖</button>
                 <button id="btn-settings" class="btn-settings" title="Settings">⚙️</button>
+            </div>
+        </div>
+        <div id="update-banner" class="update-banner" hidden>
+            <span id="update-banner-text">Checking for updates…</span>
+            <div class="update-banner-actions">
+                <button id="update-banner-action" class="update-banner-action" type="button" hidden>Restart</button>
+                <button id="update-banner-close" class="update-banner-close" type="button" aria-label="Dismiss">×</button>
             </div>
         </div>
         <h3 style="text-align: center;">Pronunciation Practice</h3>
@@ -101,29 +143,21 @@
     <!-- About Modal -->
     <div id="about-modal" class="modal">
         <div class="modal-content about-content">
-            <span class="close close-about">&times;</span>
-            <h2 class="about-title">LingoLearn Phonetics</h2>
-            <div class="about-developer">
+            <button type="button" class="close close-about" aria-label="Close">&times;</button>
+            <div class="about-profile">
                 <img src="../asset/github_profile.png" alt="Md. Yamin Hossain" class="about-dev-photo">
-                <div class="about-dev-info">
-                    <strong class="about-dev-name">Md. Yamin Hossain</strong>
-                    <span class="about-dev-role">Sr. Software Engineer</span>
-                    <span class="about-dev-location">Dhaka, Bangladesh</span>
-                    <span class="about-meta-item">License: <span class="badge bg-secondary">ISC</span></span>
-                    <a href="#" id="about-github" class="about-link">@needyamin · GitHub</a>
-                </div>
+                <strong class="about-dev-name">Md. Yamin Hossain</strong>
+                <span class="about-dev-role">Sr. Software Engineer</span>
+                <span class="about-dev-location">Dhaka, Bangladesh</span>
+                <p class="about-bio">Software Engineer focused on scalable systems, infrastructure automation, and intuitive user experiences.</p>
             </div>
-
-            <div class="about-footer">
-                <div class="about-powered about-powered-inline">
-                    <span class="badge bg-secondary about-powered-label">Tags</span>
-                    <div class="about-badges">
-                        <span class="about-badge">CMU Pronouncing Dictionary</span>
-                        <span class="about-badge">E2B Bangla Dictionary</span>
-                    </div>
-                </div>
+            <div class="about-links">
+                <p class="about-links-label">Profile Links</p>
+                <a href="https://github.com/needyamin" data-url="https://github.com/needyamin">GitHub <span>github.com/needyamin</span></a>
+                <a href="https://needyamin.github.io" data-url="https://needyamin.github.io">Website <span>needyamin.github.io</span></a>
+                <a href="https://orcid.org/0009-0009-1184-6005" data-url="https://orcid.org/0009-0009-1184-6005">ORCID <span>0009-0009-1184-6005</span></a>
+                <a href="https://facebook.com/needyaminofficial" data-url="https://facebook.com/needyaminofficial">Facebook <span>needyaminofficial</span></a>
             </div>
-            <button id="btn-close-about" class="about-close-btn">Close</button>
         </div>
     </div>
 

@@ -1,13 +1,13 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, clipboard, shell, session } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, clipboard, shell, session, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
 const { spawn } = require('child_process');
 const { pathToFileURL } = require('url');
 const Store = require('electron-store');
+const updater = require('./updater');
 
 let autoUpdater;
-if (app.isPackaged) {
+if (app.isPackaged && !process.windowsStore) {
     try { autoUpdater = require('electron-updater').autoUpdater; } catch (_) { autoUpdater = null; }
 }
 
@@ -18,6 +18,40 @@ let tray;
 let lastClipboardText = '';
 let clipboardInterval;
 let practiceSpeechProcess = null;
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+    app.quit();
+} else {
+    app.on('second-instance', () => {
+        showMainWindow();
+    });
+}
+
+function showMainWindow() {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+        createWindow();
+        return;
+    }
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+    if (process.platform === 'win32') {
+        mainWindow.moveTop();
+        mainWindow.setAlwaysOnTop(true);
+        mainWindow.setAlwaysOnTop(false);
+    }
+}
+
+function registerGlobalShortcuts() {
+    globalShortcut.unregisterAll();
+    const ok = globalShortcut.register('CommandOrControl+Shift+L', () => {
+        showMainWindow();
+    });
+    if (!ok) {
+        console.warn('Could not register Ctrl+Shift+L. Another app may already use this shortcut.');
+    }
+}
 
 // Default settings
 const defaultSettings = {
@@ -89,34 +123,37 @@ function createWindow() {
         return false;
     });
 
-    const template = [
+    mainWindow.on('hide', () => {
+        maybeInstallWhenIdle();
+    });
+
+    mainWindow.setMenuBarVisibility(false);
+    Menu.setApplicationMenu(buildAppMenu());
+}
+
+function sendToMain(channel) {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel);
+}
+
+function buildAppMenu() {
+    return Menu.buildFromTemplate([
         {
             label: 'File',
             submenu: [
-                { label: 'Clear Entry', accelerator: 'CmdOrCtrl+K', click: () => mainWindow.webContents.send('clear-entry') },
+                { label: 'Clear', accelerator: 'CmdOrCtrl+K', click: () => sendToMain('clear-entry') },
+                { label: 'Practice', click: () => openPracticeWindow() },
+                { type: 'separator' },
+                { label: 'Settings…', accelerator: 'CmdOrCtrl+,', click: () => sendToMain('show-settings') },
                 { type: 'separator' },
                 { label: 'Exit', click: () => { app.isQuitting = true; app.quit(); } }
             ]
         },
         {
-            label: 'Edit',
-            submenu: [
-                { role: 'cut' },
-                { role: 'copy' },
-                { role: 'paste' },
-                { role: 'selectAll' },
-                { type: 'separator' },
-                { label: 'Clear Entry', accelerator: 'CmdOrCtrl+K', click: () => mainWindow.webContents.send('clear-entry') },
-                { label: 'Copy IPA', accelerator: 'CmdOrCtrl+Shift+C', click: () => mainWindow.webContents.send('copy-ipa') }
-            ]
-        },
-        {
             label: 'View',
             submenu: [
-                { role: 'reload' },
-                { type: 'separator' },
                 { role: 'zoomIn' },
                 { role: 'zoomOut' },
+                { role: 'resetZoom' },
                 { type: 'separator' },
                 { role: 'togglefullscreen' }
             ]
@@ -124,15 +161,17 @@ function createWindow() {
         {
             label: 'Help',
             submenu: [
-                { label: 'Learn More', click: async () => { await shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics'); } },
-                { label: 'Report Issue', click: async () => { await shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics/issues'); } },
+                { label: 'Check for Updates', click: () => updater.checkForAppUpdatesNow() },
                 { type: 'separator' },
-                { label: 'About Us', click: () => mainWindow.webContents.send('show-about') }
+                { label: 'Privacy Policy', click: () => shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md') },
+                { label: 'Report Issue', click: () => shell.openExternal('https://github.com/needyamin/lingoLearn-phonetics/issues') }
             ]
+        },
+        {
+            label: 'About',
+            click: () => sendToMain('show-about')
         }
-    ];
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
+    ]);
 }
 
 function openPracticeWindow() {
@@ -143,10 +182,11 @@ function openPracticeWindow() {
     }
 
     practiceWindow = new BrowserWindow({
-        width: 720,
-        height: 780,
-        minWidth: 560,
-        minHeight: 680,
+        width: 640,
+        height: 680,
+        minWidth: 480,
+        minHeight: 540,
+        backgroundColor: '#ffffff',
         title: 'English Practice',
         icon: path.join(__dirname, '../asset/icon.png'),
         webPreferences: {
@@ -270,15 +310,31 @@ function createTray() {
     const iconPath = path.join(__dirname, '../asset/icon.png');
     tray = new Tray(iconPath);
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Show', click: () => mainWindow.show() },
+        { label: 'Show', accelerator: 'Ctrl+Shift+L', click: () => showMainWindow() },
         { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } }
     ]);
-    tray.setToolTip('LingoLearn Phonetics');
+    tray.setToolTip('LingoLearn Phonetics  (Ctrl+Shift+L)');
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
-        mainWindow.show();
+        showMainWindow();
     });
+}
+
+function broadcast(channel, payload) {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
+    if (practiceWindow && !practiceWindow.isDestroyed()) practiceWindow.webContents.send(channel, payload);
+}
+
+function maybeInstallWhenIdle() {
+    if (!autoUpdater || !updater.isUpdateReady()) return;
+    if (practiceWindow && !practiceWindow.isDestroyed()) return;
+    setTimeout(() => {
+        if (!updater.isUpdateReady()) return;
+        if (practiceWindow && !practiceWindow.isDestroyed()) return;
+        if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()) return;
+        updater.installDownloadedUpdate(autoUpdater);
+    }, 1800);
 }
 
 function startClipboardMonitor() {
@@ -301,13 +357,10 @@ app.whenReady().then(() => {
     grantMediaPermissions();
     createWindow();
     createTray();
+    registerGlobalShortcuts();
     startClipboardMonitor();
-    if (autoUpdater) {
-        autoUpdater.autoDownload = true;
-        autoUpdater.autoInstallOnAppQuit = true;
-        autoUpdater.checkForUpdatesAndNotify().catch(() => {});
-    }
-    fetchDictUpdates();
+    updater.startMaterialsSync(store, broadcast);
+    if (autoUpdater) updater.setupAppUpdater(autoUpdater, broadcast);
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -319,6 +372,10 @@ app.on('window-all-closed', () => {
     }
 });
 
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
+});
+
 ipcMain.handle('get-settings', () => store.store);
 ipcMain.handle('set-setting', (event, key, value) => {
     store.set(key, value);
@@ -326,54 +383,37 @@ ipcMain.handle('set-setting', (event, key, value) => {
         lastClipboardText = clipboard.readText();
     }
 });
-const DICT_BASE = 'https://raw.githubusercontent.com/needyamin/lingoLearn-phonetics/main/asset';
-
-function getDictPath(name) {
-    const userDir = path.join(app.getPath('userData'), 'dicts');
-    if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
-    return path.join(userDir, name);
-}
-
-function readDict(userPath, bundledPath) {
-    try {
-        if (fs.existsSync(userPath)) return fs.readFileSync(userPath, 'utf-8');
-    } catch (_) {}
-    try {
-        return fs.readFileSync(bundledPath, 'utf-8');
-    } catch (e) {
-        console.error('Failed to read dict', e);
-        return null;
-    }
-}
-
-function fetchDictUpdates() {
-    const files = [
-        { name: 'cmudict-0.7b-ipa.txt', bundled: path.join(__dirname, '../asset/cmudict-0.7b-ipa.txt') },
-        { name: 'E2Bdatabase.json', bundled: path.join(__dirname, '../asset/E2Bdatabase.json') }
-    ];
-    files.forEach(({ name, bundled }) => {
-        const userPath = getDictPath(name);
-        const url = `${DICT_BASE}/${name}`;
-        https.get(url, (res) => {
-            if (res.statusCode !== 200) return;
-            const chunks = [];
-            res.on('data', (c) => chunks.push(c));
-            res.on('end', () => {
-                const data = Buffer.concat(chunks).toString('utf-8');
-                if (data && data.length > 100) {
-                    try { fs.writeFileSync(userPath, data); } catch (_) {}
-                    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('dicts-updated');
-                }
-            });
-        }).on('error', () => {});
-    });
-}
-
-ipcMain.handle('get-ipa-dict', async () => readDict(getDictPath('cmudict-0.7b-ipa.txt'), path.join(__dirname, '../asset/cmudict-0.7b-ipa.txt')));
+ipcMain.handle('get-ipa-dict', async () => updater.readMaterial('cmudict-0.7b-ipa.txt'));
 ipcMain.handle('get-bangla-dict', async () => {
-    const jsonDict = readDict(getDictPath('E2Bdatabase.json'), path.join(__dirname, '../asset/E2Bdatabase.json'));
+    const jsonDict = updater.readMaterial('E2Bdatabase.json');
     if (jsonDict && jsonDict.trim().startsWith('[')) return jsonDict;
-    return readDict(getDictPath('bangla_dictionary.txt'), path.join(__dirname, '../asset/bangla_dictionary.txt'));
+    return updater.readMaterial('bangla_dictionary.txt');
+});
+ipcMain.handle('get-practice-lessons', async () => updater.parseLessons(updater.readMaterial('practice-lessons.json')) || []);
+ipcMain.handle('get-app-version', () => app.getVersion());
+ipcMain.handle('install-app-update', () => updater.installDownloadedUpdate(autoUpdater));
+ipcMain.handle('check-app-update', () => updater.checkForAppUpdatesNow());
+ipcMain.handle('app-hide', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+    return true;
+});
+ipcMain.handle('app-quit', () => {
+    app.isQuitting = true;
+    app.quit();
+    return true;
+});
+ipcMain.handle('app-zoom', (_event, dir) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return 0;
+    const view = mainWindow.webContents;
+    if (dir === 'reset') view.setZoomLevel(0);
+    else if (dir === 'in') view.setZoomLevel(view.getZoomLevel() + 0.5);
+    else if (dir === 'out') view.setZoomLevel(view.getZoomLevel() - 0.5);
+    return view.getZoomLevel();
+});
+ipcMain.handle('app-fullscreen', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return false;
+    mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    return mainWindow.isFullScreen();
 });
 ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
 ipcMain.handle('open-practice', () => openPracticeWindow());

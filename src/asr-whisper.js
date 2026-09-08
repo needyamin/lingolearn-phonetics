@@ -36,16 +36,16 @@ export async function loadWhisperAsr(onProgress) {
             env.backends.onnx.wasm.numThreads = 1;
             env.backends.onnx.wasm.proxy = false;
 
-            onProgress?.('Loading a more accurate speech model…');
+            onProgress?.('Loading speech model…');
             const modelOptions = {
                 dtype: 'q8',
                 device: 'wasm',
                 progress_callback: (info) => {
                     if (!info) return;
                     if (info.status === 'progress' && typeof info.progress === 'number') {
-                        onProgress?.(`Downloading speech model… ${Math.round(info.progress)}%`);
+                        onProgress?.(`Downloading model… ${Math.round(info.progress)}%`);
                     } else if (info.status === 'download') {
-                        onProgress?.('Downloading speech model (one-time)…');
+                        onProgress?.('Downloading speech model…');
                     }
                 }
             };
@@ -53,10 +53,10 @@ export async function loadWhisperAsr(onProgress) {
                 transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', modelOptions);
             } catch (err) {
                 console.warn('whisper-base.en failed, falling back to tiny.en', err);
-                onProgress?.('Using the lighter speech model…');
+                onProgress?.('Using a lighter speech model…');
                 transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', modelOptions);
             }
-            onProgress?.('Speech engine ready. Click Start Speaking.');
+            onProgress?.('Ready. Tap Speak, then read.');
             return transcriber;
         } catch (err) {
             loadPromise = null;

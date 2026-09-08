@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:css='false' b:js='true' expr:dir='data:blog.locale.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+  <meta charset='UTF-8'/>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <title>LingoLearn Phonetics — English pronunciation for Windows</title>
+  <meta name='description' content='LingoLearn Phonetics is a Windows desktop app for English pronunciation: hear any word, see IPA and Bangla meanings, and practice reading out loud with on-device speech recognition.'/>
+  <link href='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiK-uYF6esz4HwrHrZLDMxPiOBgHBq11MmkRAvIR15dRDcm9qk5FOtzbEBQEpcraJHZfzJk0jmIqjUDdAYjIFh4zkawihnpomNF-fkXihqjD5Paz7DiLGRg45qEEJqtAqU3s864oAKRmx8V_YDdWigODrU5e6hHZI0J4btmhw7thppjudh8rrEtkxBEgZ1l/s324/icon.png' rel='icon'/>
+  <b:include data='blog' name='all-head-content'/>
+  <b:skin><![CDATA[
+:root {
+  --text: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --accent: #2563eb;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+header.site {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.brand img { height: 32px; width: auto; }
+.nav-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+.nav-links a { color: var(--muted); text-decoration: none; }
+.nav-links a:hover { color: var(--text); }
+.hero { padding: 48px 0 24px; }
+.hero h1 { font-size: 36px; line-height: 1.2; margin: 0 0 12px; letter-spacing: -0.03em; }
+.hero p.lead { font-size: 18px; color: var(--muted); margin: 0 0 24px; max-width: 640px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 14px;
+  text-decoration: none;
+}
+.btn-primary { background: #111827; color: #fff; }
+.btn-primary:hover { background: #1f2937; text-decoration: none; }
+.btn-ghost { background: #fff; color: #111827; border: 1px solid var(--line); }
+.btn-ghost:hover { background: #f3f4f6; text-decoration: none; }
+.shot {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  margin: 28px auto 0;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  background: #fff;
+}
+.block { padding: 28px 0; }
+h2 { font-size: 22px; margin: 0 0 8px; letter-spacing: -0.02em; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+}
+.card h3 { margin: 0 0 6px; font-size: 15px; }
+.card p { margin: 0; font-size: 14px; color: var(--muted); }
+ol { margin: 0; padding-left: 20px; color: #374151; }
+ol li { margin-bottom: 8px; }
+.dev {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+}
+.dev img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.dev p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 24px 0 40px;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer.site .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.blog-hidden { display: none; }
+@media (max-width: 640px) {
+  .hero h1 { font-size: 28px; }
+  .nav { padding: 10px 0; }
+}
+]]></b:skin>
+</head>
+<body>
+  <header class='site'>
+    <div class='wrap nav'>
+      <a class='brand' expr:href='data:blog.homepageUrl'>
+        <img alt='LingoLearn Phonetics' border='0' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiK-uYF6esz4HwrHrZLDMxPiOBgHBq11MmkRAvIR15dRDcm9qk5FOtzbEBQEpcraJHZfzJk0jmIqjUDdAYjIFh4zkawihnpomNF-fkXihqjD5Paz7DiLGRg45qEEJqtAqU3s864oAKRmx8V_YDdWigODrU5e6hHZI0J4btmhw7thppjudh8rrEtkxBEgZ1l/s324/icon.png'/>
+        LingoLearn Phonetics
+      </a>
+      <nav class='nav-links'>
+        <a href='#features'>Features</a>
+        <a href='#practice'>Practice</a>
+        <a href='#download'>Download</a>
+        <a href='https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md'>Privacy</a>
+        <a href='https://github.com/needyamin/lingoLearn-phonetics'>GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class='wrap'>
+    <div class='hero'>
+      <h1>Hear it. See the IPA. Practice out loud.</h1>
+      <p class='lead'>LingoLearn Phonetics is a free Windows desktop app for English pronunciation. Look up a word to hear it, read the phonetic transcription and a Bangla meaning, or open English Practice and read short paragraphs while the app listens on your PC.</p>
+      <div class='actions'>
+        <a class='btn btn-primary' href='https://github.com/needyamin/lingoLearn-phonetics/releases'>Download for Windows</a>
+        <a class='btn btn-ghost' href='https://github.com/needyamin/lingoLearn-phonetics'>View source</a>
+      </div>
+      <div class='separator' style='clear: both;'>
+        <a href='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6poFQGFrcOv1yFfGoMQBdGuIEOAYUntzlDr3tX74KudZvk-_jZgxhb1yoelW89UprHHp83VjFljW6mPJqRBgc4MWXOnZ3nHhkOH7DjwNDubhW2x_ndk8kSK5T2dL9ef5YsaIcE5B_dKJ6VZE3XuXE8XhoocvwCHRSjbH_1TV5izfb9BKgxFewwJOOfxxX/s874/logo.png' style='display: block; padding: 1em 0; text-align: center;'>
+          <img alt='LingoLearn Phonetics logo' border='0' class='shot' data-original-height='244' data-original-width='874' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6poFQGFrcOv1yFfGoMQBdGuIEOAYUntzlDr3tX74KudZvk-_jZgxhb1yoelW89UprHHp83VjFljW6mPJqRBgc4MWXOnZ3nHhkOH7DjwNDubhW2x_ndk8kSK5T2dL9ef5YsaIcE5B_dKJ6VZE3XuXE8XhoocvwCHRSjbH_1TV5izfb9BKgxFewwJOOfxxX/s600/logo.png' width='600'/>
+        </a>
+      </div>
+    </div>
+
+    <div class='block' id='features'>
+      <h2>What it does</h2>
+      <p class='sub'>Built for learners who want pronunciation, phonetics, and Bangla together in one small app.</p>
+      <div class='grid'>
+        <div class='card'>
+          <h3>Speak</h3>
+          <p>Play any word or phrase with Windows text-to-speech. Choose voice, rate, and volume in Settings.</p>
+        </div>
+        <div class='card'>
+          <h3>IPA</h3>
+          <p>See phonetic transcription from the CMU Pronouncing Dictionary so you know how a word is said.</p>
+        </div>
+        <div class='card'>
+          <h3>Bangla meanings</h3>
+          <p>English-to-Bangla lookup from the bundled E2B dictionary, kept up to date from GitHub.</p>
+        </div>
+        <div class='card'>
+          <h3>English Practice</h3>
+          <p>Read a lesson out loud. The app marks matched words green and missed words red, then lets you continue.</p>
+        </div>
+        <div class='card'>
+          <h3>Clipboard</h3>
+          <p>Optional: copy text anywhere and the app can look it up or speak it. Turn this off in Settings.</p>
+        </div>
+        <div class='card'>
+          <h3>Tray and shortcut</h3>
+          <p>Close hides to the tray. Press Ctrl+Shift+L to bring the main window back, even from the tray.</p>
+        </div>
+        <div class='card'>
+          <h3>History</h3>
+          <p>Recent lookups stay on your PC so you can jump back to a word you already practiced.</p>
+        </div>
+        <div class='card'>
+          <h3>On-device speech</h3>
+          <p>Practice uses Whisper on your computer. No Google speech API. First use may download a local model.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class='block' id='practice'>
+      <h2>English Practice</h2>
+      <p class='sub'>Open it with the book button on the main window. Speech recognition runs locally.</p>
+      <div class='card'>
+        <ol>
+          <li>Wait until the speech engine is ready (first run may download a Whisper model).</li>
+          <li>Tap Hear to listen to the paragraph, if you want a model reading.</li>
+          <li>Tap Speak, read one sentence, then pause for about half a second.</li>
+          <li>Your transcript appears under the paragraph. Green matched; red was missed. Keep reading forward — do not repeat missed words.</li>
+        </ol>
+        <p style='margin: 14px 0 0; color: #6b7280; font-size: 14px;'>A quiet room and a microphone close to your mouth work best. If the local model cannot load, the app falls back to Windows speech recognition.</p>
+      </div>
+    </div>
+
+    <div class='block' id='download'>
+      <h2>Get the app</h2>
+      <p class='sub'>Version 2.0.0 · Windows 10 or later · x64 · License: ISC</p>
+      <div class='grid'>
+        <div class='card'>
+          <h3>Windows installer</h3>
+          <p>Use the Inno Setup file <code>LingoLearn-Phonetics-Setup-2.0.0.exe</code> from GitHub Releases. Installs per user, Start Menu and Desktop shortcuts, no admin required unless you pick all-users.</p>
+        </div>
+        <div class='card'>
+          <h3>Microsoft Store</h3>
+          <p>The MSIX package is built for Partner Center. Store copies update through the Store. Dictionaries and lessons still refresh from GitHub.</p>
+        </div>
+      </div>
+      <p style='margin-top: 16px;'><a href='https://github.com/needyamin/lingoLearn-phonetics/releases'>github.com/needyamin/lingoLearn-phonetics/releases</a></p>
+    </div>
+
+    <div class='block'>
+      <h2>How updates work</h2>
+      <div class='grid'>
+        <div class='card'>
+          <h3>Materials</h3>
+          <p>IPA, Bangla dictionary, and practice lessons check a few seconds after launch, then every few hours. Unchanged files are skipped.</p>
+        </div>
+        <div class='card'>
+          <h3>The app itself</h3>
+          <p>Store builds update in the Store. GitHub NSIS builds can download a new installer. Inno and portable copies need a new Setup exe; materials still update.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class='block'>
+      <h2>Privacy</h2>
+      <p class='sub'>No account. Lookups, history, and speech stay on your PC. We do not sell data.</p>
+      <div class='card'>
+        <p>Clipboard monitoring is optional. The microphone is used only while you tap Speak. Whisper runs on-device. The app may contact GitHub for dictionaries and updates, and Hugging Face once to download the speech model. Full details: <a href='https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md'>Privacy Policy</a>.</p>
+      </div>
+    </div>
+
+    <div class='block'>
+      <h2>Developer</h2>
+      <div class='dev'>
+        <div class='separator' style='clear: none;'>
+          <a href='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGnqGYn2GNaOv_LdjJHndUXh-tZsQ-kXW26uzQb1KwybrQEACOQNY_Lys2C0pPSgdYXL7qZr2RTr-oFeuG_JFSw8HySJquI8cpNl3-VKkgYMJAGOIHwQKbIGivO17e_YRfde4Y6mAcadAfyzILfHuXjWINp5Q3jwu5CAO3He84OfcSpdIKencsBCa3tigM/s460/github_profile.png'>
+            <img alt='Md. Yamin Hossain' border='0' data-original-height='460' data-original-width='460' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGnqGYn2GNaOv_LdjJHndUXh-tZsQ-kXW26uzQb1KwybrQEACOQNY_Lys2C0pPSgdYXL7qZr2RTr-oFeuG_JFSw8HySJquI8cpNl3-VKkgYMJAGOIHwQKbIGivO17e_YRfde4Y6mAcadAfyzILfHuXjWINp5Q3jwu5CAO3He84OfcSpdIKencsBCa3tigM/s320/github_profile.png' width='64'/>
+          </a>
+        </div>
+        <div>
+          <strong>Md. Yamin Hossain</strong>
+          <p>Sr. Software Engineer · Dhaka, Bangladesh<br/>
+          Software Engineer focused on scalable systems, infrastructure automation, and intuitive user experiences.</p>
+          <p>
+            <a href='https://github.com/needyamin'>GitHub</a> ·
+            <a href='https://needyamin.github.io'>Website</a> ·
+            <a href='https://orcid.org/0009-0009-1184-6005'>ORCID</a> ·
+            <a href='https://github.com/needyamin/lingoLearn-phonetics/issues'>Report an issue</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class='site'>
+    <div class='wrap row'>
+      <span>© 2026 Md. Yamin Hossain · LingoLearn Phonetics · ISC License</span>
+      <span>
+        <a href='https://github.com/needyamin/lingoLearn-phonetics/blob/main/PRIVACY.md'>Privacy Policy</a> ·
+        <a href='https://github.com/needyamin/lingoLearn-phonetics'>Source</a>
+      </span>
+    </div>
+  </footer>
+
+  <b:section class='blog-hidden' id='page' maxwidgets='1' showaddelement='no'>
+    <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog'>
+      <b:includable id='main'>
+        <b:if cond='data:view.isLayoutMode'>
+          <data:title/>
+        </b:if>
+      </b:includable>
+    </b:widget>
+  </b:section>
+</body>
+</html>
