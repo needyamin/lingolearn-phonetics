@@ -6,6 +6,8 @@ Desktop app for English pronunciation and translation. Look up a word to hear it
 
 **Author:** [Md. Yamin Hossain](https://github.com/needyamin) · License: ISC
 
+<img width="800" height="450" alt="Image" src="https://github.com/user-attachments/assets/87915476-9c3a-421e-83b8-26a379d480bc" />
+
 ## Features
 
 - **Speak** — system TTS for any word or phrase
