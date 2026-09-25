@@ -28,5 +28,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     startPracticeSpeech: (payload) => ipcRenderer.invoke('start-practice-speech', payload),
     stopPracticeSpeech: () => ipcRenderer.invoke('stop-practice-speech'),
     onPracticeSpeech: (callback) => ipcRenderer.on('practice-speech', (_event, value) => callback(value)),
-    getOrtWasmDir: () => ipcRenderer.invoke('get-ort-wasm-dir')
+    getOrtWasmDir: () => ipcRenderer.invoke('get-ort-wasm-dir'),
+    onLensPayload: (callback) => ipcRenderer.on('lens-payload', (_event, value) => callback(value)),
+    onLensHidden: (callback) => ipcRenderer.on('lens-hidden', (_event) => callback()),
+    hideLens: () => ipcRenderer.invoke('lens-hide'),
+    resizeLens: (height) => ipcRenderer.invoke('lens-resize', height),
+    openGoogleTranslate: (text) => ipcRenderer.invoke('lens-open-translate', text)
 });

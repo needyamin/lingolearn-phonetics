@@ -1,16 +1,19 @@
 {
   "name": "lingo-learn",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "LingoLearn - Pronunciation & Dictionary",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node scripts/qa-practice-align.js && node scripts/qa-practice-dom.js",
+    "test:align": "node scripts/qa-practice-align.js",
+    "test:dom": "node scripts/qa-practice-dom.js",
     "dist": "electron-builder",
     "dist:inno": "node scripts/build-inno.js",
     "dist:msix": "node scripts/build-msix.js",
     "dist:win": "node scripts/build-inno.js && node scripts/build-msix.js",
     "dist:linux": "electron-builder --linux",
-    "dist:linux:docker": "docker build -f Dockerfile.linux-build -t tts-pronunciation-linux-builder . && docker run --rm -v \"%cd%/dist:/app/dist\" tts-pronunciation-linux-builder",
+    "dist:linux:docker": "node scripts/build-linux-docker.js",
     "pack": "electron-packager . \"LingoLearn Phonetics\" --overwrite --platform=win32 --arch=x64 --icon=asset/icon.png --prune=true --out=release-builds"
   },
   "keywords": [],
@@ -30,6 +33,7 @@
   "build": {
     "appId": "com.needyamin.lingolearn",
     "productName": "LingoLearn Phonetics",
+    "afterPack": "scripts/after-pack.js",
     "directories": {
       "output": "dist"
     },
@@ -54,7 +58,6 @@
         }
       ],
       "icon": "asset/icon.png",
-      "sign": null,
       "forceCodeSigning": false,
       "signAndEditExecutable": false
     },
@@ -74,6 +77,8 @@
     ],
     "asarUnpack": [
       "src/windows-asr.ps1",
+      "src/capture-selection.ps1",
+      "src/selection-watch.ps1",
       "node_modules/@huggingface/transformers/**",
       "node_modules/onnxruntime-web/**"
     ],

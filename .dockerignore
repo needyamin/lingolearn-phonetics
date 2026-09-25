@@ -1,0 +1,62 @@
+# Keeps the Docker build context small and, critically, stops the host's
+# node_modules being copied into the image. The Dockerfile runs `npm install`
+# to get Linux-native modules and then does `COPY . .` -- without this file that
+# second copy would overwrite them with the host's (Windows) binaries and break
+# the build.
+#
+# Do NOT exclude `scripts/`: package.json points build.afterPack at
+# scripts/after-pack.js, and electron-builder must be able to load it (it exits
+# early on non-Windows platforms, but the file still has to exist).
+
+node_modules
+dist
+dist-linux
+release-builds
+out
+
+# Build artifacts and archives -- never needed inside the image
+*.exe
+*.msix
+*.appx
+*.dmg
+*.AppImage
+*.blockmap
+latest.yml
+latest-linux.yml
+builder-debug.yml
+*.rar
+*.7z
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Generated icons (recreated from asset/icon.png during the build)
+asset/icon.ico
+installer/icon.ico
+
+# Signing material / secrets
+*.pem
+*.pfx
+*.p12
+*.cer
+*.key
+.env
+.env.*
+
+# Version control, editor and agent metadata
+.git
+.gitignore
+.gitattributes
+.workbuddy-ai
+.idea
+.vscode
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db

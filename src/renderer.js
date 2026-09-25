@@ -4,15 +4,18 @@ const btnStop = document.getElementById('btn-stop');
 const btnClear = document.getElementById('btn-clear');
 const ipaDisplay = document.getElementById('ipa-display');
 const banglaDisplay = document.getElementById('bangla-display');
-const historyList = document.getElementById('history-list');
 const btnSettings = document.getElementById('btn-settings');
+const btnAnsnew = document.getElementById('btn-ansnew');
 const settingsModal = document.getElementById('settings-modal');
-const closeModal = document.querySelector('.close');
+const closeModal = document.querySelector('#settings-modal .close');
 const btnSaveSettings = document.getElementById('btn-save-settings');
+const btnResetSettings = document.getElementById('btn-reset-settings');
 
 // Settings Elements
 const settingTtsEnabled = document.getElementById('setting-tts-enabled');
 const settingAutoSpeak = document.getElementById('setting-auto-speak');
+const settingSpeakSelection = document.getElementById('setting-speak-selection');
+const settingSpeakCopy = document.getElementById('setting-speak-copy');
 const settingRate = document.getElementById('setting-rate');
 const settingRateValue = document.getElementById('rate-value');
 const settingVolume = document.getElementById('setting-volume');
@@ -20,12 +23,26 @@ const settingVolumeValue = document.getElementById('volume-value');
 const settingVoice = document.getElementById('setting-voice');
 const settingClipboard = document.getElementById('setting-clipboard');
 const settingShowIpa = document.getElementById('setting-show-ipa');
+const settingShowBangla = document.getElementById('setting-show-bangla');
+const settingMinimizeTray = document.getElementById('setting-minimize-tray');
+const settingLaunchLogin = document.getElementById('setting-launch-login');
+const settingStartMinimized = document.getElementById('setting-start-minimized');
+const settingPracticeSensitivity = document.getElementById('setting-practice-sensitivity');
+const settingPracticeModel = document.getElementById('setting-practice-model');
+const settingPracticePrompt = document.getElementById('setting-practice-prompt');
+const settingLens = document.getElementById('setting-lens');
+const settingLensCopy = document.getElementById('setting-lens-copy');
+const settingLensDict = document.getElementById('setting-lens-dict');
+const settingLensSpeakTarget = document.getElementById('setting-lens-speaktarget');
+const settingLensTheme = document.getElementById('setting-lens-theme');
+const settingLensMax = document.getElementById('setting-lens-max');
+const settingLensAutoHide = document.getElementById('setting-lens-autohide');
+const settingLensPosition = document.getElementById('setting-lens-position');
 
 let settings = {};
 let ipaDict = new Map();
 let banglaDict = new Map();
 let voices = [];
-let history = [];
 let dictionarySize = 0;
 let banglaDictSize = 0;
 
@@ -131,35 +148,87 @@ function populateVoices() {
 }
 
 function updateSettingsUI() {
-    settingTtsEnabled.checked = settings.ttsEnabled;
-    settingAutoSpeak.checked = settings.autoSpeak;
+    settingTtsEnabled.checked = settings.ttsEnabled !== false;
+    settingAutoSpeak.checked = settings.autoSpeak !== false;
+    settingSpeakSelection.checked = settings.speakOnSelection !== false;
+    settingSpeakCopy.checked = settings.speakOnCopy !== false;
     settingRate.value = settings.speechRate || 1.0;
     settingRateValue.textContent = settings.speechRate || 1.0;
-    settingVolume.value = settings.volume;
-    settingVolumeValue.textContent = settings.volume;
-    settingClipboard.checked = settings.clipboardMonitoring;
-    settingShowIpa.checked = settings.showIpa;
+    settingVolume.value = settings.volume != null ? settings.volume : 1.0;
+    settingVolumeValue.textContent = settings.volume != null ? settings.volume : 1.0;
+    settingVoice.value = settings.voiceName || '';
+    settingClipboard.checked = settings.clipboardMonitoring !== false;
+    settingShowIpa.checked = settings.showIpa !== false;
+    settingShowBangla.checked = settings.showBangla !== false;
+    settingMinimizeTray.checked = settings.minimizeToTray !== false;
+    settingLaunchLogin.checked = settings.launchAtLogin !== false;
+    settingStartMinimized.checked = settings.startMinimized !== false;
+    settingPracticeSensitivity.value = ['lenient', 'normal', 'strict'].includes(settings.practiceSensitivity)
+        ? settings.practiceSensitivity : 'normal';
+    settingPracticeModel.value = ['small', 'base', 'tiny'].includes(settings.practiceModel)
+        ? settings.practiceModel : 'small';
+    settingPracticePrompt.checked = settings.practiceUsePrompt !== false;
+    settingLens.checked = settings.lensEnabled !== false;
+    settingLensCopy.checked = settings.lensOnCopy !== false;
+    settingLensDict.checked = settings.lensShowDictionary !== false;
+    settingLensSpeakTarget.value = settings.lensSpeakTarget === 'translation' ? 'translation' : 'source';
+    settingLensTheme.value = ['auto', 'light', 'dark'].includes(settings.lensTheme) ? settings.lensTheme : 'auto';
+    settingLensMax.value = settings.lensMaxSelection || 600;
+    settingLensAutoHide.value = settings.lensAutoHideSeconds != null ? settings.lensAutoHideSeconds : 20;
+    settingLensPosition.value = settings.lensPosition === 'center' ? 'center' : 'cursor';
+
+    applyDisplaySettings();
 
     const statEl = document.getElementById('dict-stat');
     if (statEl) statEl.textContent = `IPA: ${dictionarySize.toLocaleString()} · Bangla: ${banglaDictSize.toLocaleString()}`;
 }
 
-function saveSettingsFromUI() {
-    const newSettings = {
+// Show/hide the IPA and Bangla blocks in the main window per settings.
+function applyDisplaySettings() {
+    const ipaContainer = document.querySelector('.ipa-container');
+    const banglaContainer = document.querySelector('.bangla-container');
+    if (ipaContainer) ipaContainer.style.display = settings.showIpa === false ? 'none' : '';
+    if (banglaContainer) banglaContainer.style.display = settings.showBangla === false ? 'none' : '';
+}
+
+function collectSettingsFromUI() {
+    return {
         ttsEnabled: settingTtsEnabled.checked,
         autoSpeak: settingAutoSpeak.checked,
-        speechRate: parseFloat(settingRate.value),
-        voiceName: settingVoice.value,
+        speakOnSelection: settingSpeakSelection.checked,
+        speakOnCopy: settingSpeakCopy.checked,
+        speechRate: parseFloat(settingRate.value) || 1.0,
+        voiceName: settingVoice.value || null,
         volume: parseFloat(settingVolume.value),
         clipboardMonitoring: settingClipboard.checked,
-        showIpa: settingShowIpa.checked
+        showIpa: settingShowIpa.checked,
+        showBangla: settingShowBangla.checked,
+        minimizeToTray: settingMinimizeTray.checked,
+        launchAtLogin: settingLaunchLogin.checked,
+        startMinimized: settingStartMinimized.checked,
+        practiceSensitivity: settingPracticeSensitivity.value,
+        practiceModel: settingPracticeModel.value,
+        practiceUsePrompt: settingPracticePrompt.checked,
+        lensEnabled: settingLens.checked,
+        lensOnCopy: settingLensCopy.checked,
+        lensShowDictionary: settingLensDict.checked,
+        lensSpeakTarget: settingLensSpeakTarget.value === 'translation' ? 'translation' : 'source',
+        lensTheme: ['auto', 'light', 'dark'].includes(settingLensTheme.value) ? settingLensTheme.value : 'auto',
+        lensMaxSelection: Math.max(50, Math.min(1500, parseInt(settingLensMax.value, 10) || 600)),
+        lensAutoHideSeconds: Math.max(0, Math.min(120, parseInt(settingLensAutoHide.value, 10) || 0)),
+        lensPosition: settingLensPosition.value === 'center' ? 'center' : 'cursor'
     };
+}
+
+function saveSettingsFromUI() {
+    const newSettings = collectSettingsFromUI();
 
     for (const [key, value] of Object.entries(newSettings)) {
         settings[key] = value;
         window.electronAPI.setSetting(key, value);
     }
 
+    applyDisplaySettings();
     settingsModal.style.display = "none";
 }
 
@@ -257,28 +326,6 @@ function getBangla(text) {
     return arr && arr.length ? arr.join(', ') : '';
 }
 
-function addToHistory(text) {
-    if (!text) return;
-    history = history.filter(item => item !== text);
-    history.unshift(text);
-    if (history.length > 50) history.pop();
-    renderHistory();
-}
-
-function renderHistory() {
-    historyList.innerHTML = '';
-    history.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'history-item';
-        div.textContent = item;
-        div.onclick = () => {
-            textInput.value = item;
-            handleInput(item);
-        };
-        historyList.appendChild(div);
-    });
-}
-
 function handleInput(text) {
     if (!text) return;
 
@@ -292,7 +339,6 @@ function handleInput(text) {
     banglaDisplay.textContent = getBangla(text);
 
     speak(text);
-    addToHistory(text);
 }
 
 function setupEventListeners() {
@@ -319,22 +365,44 @@ function setupEventListeners() {
     const btnPractice = document.getElementById('btn-practice');
     if (btnPractice) btnPractice.onclick = () => window.electronAPI.openPractice();
 
-    btnSettings.onclick = () => settingsModal.style.display = "block";
+    // Footer attribution link - open in the system browser, never in-app.
+    if (btnAnsnew) {
+        btnAnsnew.onclick = (event) => {
+            event.preventDefault();
+            window.electronAPI.openExternal('https://inside.ansnew.com/');
+        };
+    }
+
+    btnSettings.onclick = () => {
+        updateSettingsUI();
+        settingsModal.style.display = "block";
+    };
     closeModal.onclick = () => settingsModal.style.display = "none";
     // window.onclick moved to bottom
 
     btnSaveSettings.onclick = saveSettingsFromUI;
+    if (btnResetSettings) {
+        btnResetSettings.onclick = async () => {
+            const defaults = {
+                ttsEnabled: true, autoSpeak: true, speakOnSelection: true, speakOnCopy: true,
+                speechRate: 1.0, voiceName: null, volume: 1.0,
+                clipboardMonitoring: true, showIpa: true, showBangla: true, minimizeToTray: true,
+                launchAtLogin: true, startMinimized: true,
+                lensEnabled: true, lensOnCopy: true, lensShowDictionary: true,
+                lensSpeakTarget: 'source', lensTheme: 'auto', lensMaxSelection: 600,
+                lensAutoHideSeconds: 20, lensPosition: 'cursor',
+                practiceSensitivity: 'normal', practiceModel: 'small', practiceUsePrompt: true
+            };
+            for (const [key, value] of Object.entries(defaults)) {
+                settings[key] = value;
+                await window.electronAPI.setSetting(key, value);
+            }
+            updateSettingsUI();
+        };
+    }
 
     settingRate.oninput = () => settingRateValue.textContent = settingRate.value;
     settingVolume.oninput = () => settingVolumeValue.textContent = settingVolume.value;
-
-    const btnClearHistoryUI = document.getElementById('btn-clear-history-ui');
-    if (btnClearHistoryUI) {
-        btnClearHistoryUI.onclick = () => {
-            history = [];
-            renderHistory();
-        };
-    }
 
     window.electronAPI.onClipboardUpdate((text) => {
         if (settings.clipboardMonitoring) {
@@ -352,11 +420,6 @@ function setupEventListeners() {
                 speak(text);
             }
         }
-    });
-
-    window.electronAPI.onClearHistory(() => {
-        history = [];
-        renderHistory();
     });
 
     window.electronAPI.onClearEntry(() => {

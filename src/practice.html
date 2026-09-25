@@ -10,6 +10,7 @@
 
 <body class="practice-page">
     <div class="practice-shell">
+
         <header class="practice-top">
             <button id="btn-prev" class="btn-icon" type="button" aria-label="Previous lesson" title="Previous (←)">‹</button>
             <div class="practice-meta">
@@ -19,42 +20,79 @@
             <button id="btn-next" class="btn-icon" type="button" aria-label="Next lesson" title="Next (→)">›</button>
         </header>
 
-        <div class="practice-progress" aria-hidden="true">
+        <section class="practice-hud">
+            <div id="score-ring" class="score-ring" style="--angle: 0deg" aria-hidden="true">
+                <span id="score-value" class="score-value">100%</span>
+            </div>
+            <div class="score-text">
+                <span id="score-sub" class="score-sub">0/0 words</span>
+                <span id="live-dot" class="live-dot"></span>
+                <span class="live-label">Live</span>
+            </div>
+            <div id="sentence-chips" class="sentence-chips" aria-label="Sentence progress"></div>
+        </section>
+
+        <div class="practice-progress">
             <div class="practice-progress-bar">
                 <div id="progress-fill" class="practice-progress-fill"></div>
             </div>
+            <span id="progress-label" class="sr-only">0 correct</span>
         </div>
-        <span id="progress-label" class="sr-only">0 correct</span>
+
+        <div id="speak-here-cue" class="speak-here-cue is-hidden">
+            <span id="speak-here-label" class="cue-label">Start reading here</span>
+            <strong id="speak-here-word" class="cue-word">—</strong>
+        </div>
 
         <div class="practice-card">
             <p id="practice-text" class="practice-text" aria-live="polite"></p>
         </div>
 
-        <div id="heard-panel" class="heard-panel" hidden>
-            <span id="heard-count" class="heard-count" hidden>0</span>
-            <p id="heard-sentence" class="heard-sentence"></p>
-            <div id="heard-words" class="heard-words" hidden></div>
-        </div>
-
-        <div id="speak-here-cue" class="speak-here-cue is-hidden" hidden>
-            <span id="speak-here-label"></span>
-            <strong id="speak-here-word"></strong>
-        </div>
-
-        <footer class="practice-dock">
-            <div id="mic-meter" class="mic-meter" hidden>
-                <div class="mic-meter-track">
-                    <div id="mic-meter-fill" class="mic-meter-fill"></div>
+        <div class="practice-bottom">
+            <div id="heard-panel" class="heard-panel" hidden>
+                <div class="heard-head">
+                    <span class="heard-title">Heard</span>
+                    <span id="heard-count" class="heard-count" hidden>0</span>
                 </div>
+                <p id="heard-sentence" class="heard-sentence"></p>
+                <div id="heard-words" class="heard-words" hidden></div>
             </div>
-            <p id="practice-status" class="practice-status">Tap Speak, then read. Pause after each sentence.</p>
-            <p id="practice-success" class="practice-success" hidden></p>
-            <div class="practice-actions">
-                <button id="btn-listen" class="btn-ghost" type="button" title="Play the paragraph">Hear</button>
-                <button id="btn-mic" class="btn-mic" type="button" title="Space">Speak</button>
-                <button id="btn-reset" class="btn-ghost" type="button" title="Clear this lesson">Reset</button>
-            </div>
-        </footer>
+
+            <section id="result-card" class="result-card" hidden>
+                <h2 class="result-title">Lesson complete</h2>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <span id="result-accuracy" class="result-stat-value">0%</span>
+                        <span class="result-stat-label">Accuracy</span>
+                    </div>
+                    <div class="result-stat">
+                        <span id="result-pace" class="result-stat-value">0 wpm</span>
+                        <span class="result-stat-label">Pace</span>
+                    </div>
+                </div>
+                <div id="result-missed" class="result-missed"></div>
+                <div class="result-actions">
+                    <button id="btn-retry" class="btn-ghost" type="button">Try again</button>
+                    <button id="btn-continue" class="btn-mic" type="button">Next lesson ›</button>
+                </div>
+            </section>
+
+            <footer class="practice-dock">
+                <div id="mic-meter" class="mic-meter" hidden>
+                    <div id="wave-bars" class="wave-bars"></div>
+                    <div class="mic-meter-track">
+                        <div id="mic-meter-fill" class="mic-meter-fill"></div>
+                    </div>
+                </div>
+                <p id="practice-status" class="practice-status">Tap Speak, then read out loud at a steady pace.</p>
+                <p id="practice-success" class="practice-success" hidden></p>
+                <div class="practice-actions">
+                    <button id="btn-listen" class="btn-ghost" type="button" title="Play the paragraph">Hear</button>
+                    <button id="btn-mic" class="btn-mic" type="button" title="Space">Speak</button>
+                    <button id="btn-reset" class="btn-ghost" type="button" title="Clear this lesson">Reset</button>
+                </div>
+            </footer>
+        </div>
     </div>
 
     <script type="module" src="practice.js"></script>

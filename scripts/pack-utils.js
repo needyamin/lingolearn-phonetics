@@ -169,25 +169,69 @@ function writeAppxManifest(staging, store, version) {
     fs.writeFileSync(path.join(staging, 'AppxManifest.xml'), xml);
 }
 
+function removeDirSync(dir) {
+    // Delete bottom-up so we never issue a single bulk recursive delete. Some
+    // sandboxes and antivirus shims block large recursive removes (the MSIX
+    // staging tree is ~1700 files); a manual post-order walk sidesteps that.
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            removeDirSync(full);
+        } else {
+            try {
+                fs.unlinkSync(full);
+            } catch (_) {
+                // Best effort: a locked file should not abort the whole build.
+            }
+        }
+    }
+    try {
+        fs.rmdirSync(dir);
+    } catch (_) {
+        // Leave the directory if something still holds it; mkdir is recursive.
+    }
+}
+
 function stageMsix(unpacked, store, version) {
     const staging = path.join(ROOT, 'dist', 'msix-staging');
-    fs.rmSync(staging, { recursive: true, force: true });
+    removeDirSync(staging);
     const assets = path.join(staging, 'assets');
     const appDir = path.join(staging, 'app');
     fs.mkdirSync(assets, { recursive: true });
     copyDir(unpacked, appDir);
-    const icon = path.join(ROOT, 'asset', 'icon.png');
-    const copies = [
-        'StoreLogo.png',
-        'Square44x44Logo.png',
-        'Square71x71Logo.png',
-        'Square150x150Logo.png',
-        'Wide310x150Logo.png',
-        'SplashScreen.png'
-    ];
-    copies.forEach((name) => fs.copyFileSync(icon, path.join(assets, name)));
+    writeStoreTiles(assets);
     writeAppxManifest(staging, store, version);
     return staging;
+}
+
+// Windows requires each Store tile to be an exact pixel size. Copying one
+// square PNG into all six slots (the previous behaviour) fails certification,
+// so each tile is generated at its required dimensions from asset/icon.png.
+const STORE_TILES = {
+    'StoreLogo.png': [50, 50],
+    'Square44x44Logo.png': [44, 44],
+    'Square71x71Logo.png': [71, 71],
+    'Square150x150Logo.png': [150, 150],
+    'Wide310x150Logo.png': [310, 150],
+    'SplashScreen.png': [620, 300]
+};
+const TILE_BG = [17, 17, 17, 255]; // matches the manifest's #111111
+
+function writeStoreTiles(assetsDir) {
+    const src = path.join(ROOT, 'asset', 'icon.png');
+    if (!fs.existsSync(src)) throw new Error(`Store tile source missing: ${src}`);
+    const script = path.join(ROOT, 'scripts', 'make-store-tiles.py');
+    const result = spawnSync('python', [script, src, assetsDir], { stdio: 'inherit' });
+    if (result.status !== 0) {
+        // Fall back to plain copies so a missing Python never blocks the build,
+        // but say so loudly -- these files will likely fail Store certification.
+        console.warn('WARNING: could not generate correctly sized Store tiles (needs Python + Pillow).');
+        console.warn('         Falling back to copying asset/icon.png into every tile slot.');
+        for (const name of Object.keys(STORE_TILES)) {
+            fs.copyFileSync(src, path.join(assetsDir, name));
+        }
+    }
 }
 
 module.exports = {

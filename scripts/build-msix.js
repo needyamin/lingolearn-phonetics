@@ -51,7 +51,16 @@ function main() {
 
     if (makeappx) {
         console.log(`Packing MSIX with ${makeappx}`);
-        if (fs.existsSync(out)) fs.unlinkSync(out);
+        // MakeAppx already overwrites with /o, so remove the old package only if
+        // it is genuinely in the way. Guarded: some sandboxes block large file
+        // deletes, and a stale output should never abort a fresh build.
+        if (fs.existsSync(out)) {
+            try {
+                fs.unlinkSync(out);
+            } catch (err) {
+                console.warn(`Could not remove previous MSIX (${err.message}); relying on MakeAppx /o overwrite.`);
+            }
+        }
         const packed = spawnSync(makeappx, ['pack', '/d', staging, '/p', out, '/o'], {
             cwd: ROOT,
             stdio: 'inherit'

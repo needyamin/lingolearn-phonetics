@@ -41,9 +41,17 @@ input, textarea, select {
 
 .app-container {
     background-color: var(--card-bg);
-    width: 95%;
-    max-width: 700px;
-    height: calc(100vh - 72px);
+    width: 100%;
+    max-width: 860px;
+    /* Fill the window: `height: 100%` makes the card take all the vertical space
+       the body flex column offers, so no page background shows around it.
+       `overflow-y: auto` keeps it usable on short windows.
+
+       Note: a full-height card plus `margin-top: auto` on the footer necessarily
+       leaves empty space between the Bangla section and the footer on tall
+       windows. Filling that space with real content (history / logo) is the only
+       way to remove it -- no further spacing tweak can. */
+    height: 100%;
     margin-top: 12px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
@@ -53,6 +61,7 @@ input, textarea, select {
     position: relative;
     box-sizing: border-box;
     overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .app-menubar {
@@ -275,7 +284,60 @@ h1, .app-container h3 {
     font-size: 14px;
     color: var(--secondary-text);
     text-align: center;
-    margin: 0 0 30px 0;
+    margin: 0 0 22px 0;
+}
+
+/* ---------------- footer attribution ---------------- */
+
+.app-footer {
+    /* Sits flush at the end of the card, immediately after the Bangla section
+       with NO gap between them, and with no gap below it either.
+
+       How: the card is content-sized (see .app-container, no forced height), so
+       there is no leftover space for `margin-top: auto` to inflate. The card's
+       30px bottom padding is cancelled by the matching negative margin-bottom so
+       the footer lands flush on the card's bottom edge.
+       padding is symmetric (10px top / 12px bottom) so the text is optically
+       centred rather than crowding the card edge. */
+    margin-top: auto;
+    margin-bottom: -30px;
+    padding: 10px 0 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    line-height: 1.2;
+    min-height: 0;
+    color: var(--secondary-text);
+}
+
+.app-footer-text {
+    opacity: 0.85;
+}
+
+.app-footer-link {
+    /* --accent-color is a pale background tint (#eff6ff) and is invisible as
+       link text, so use the real brand blue for contrast. */
+    color: var(--primary-color);
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+}
+
+.app-footer-link:hover {
+    color: var(--primary-hover);
+    border-bottom-color: var(--primary-hover);
+}
+
+.app-footer-link:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
 .input-section {
@@ -283,7 +345,7 @@ h1, .app-container h3 {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
 }
 
 .input-wrapper {
@@ -435,7 +497,7 @@ button {
 
 .bangla-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     padding: 16px;
     background-color: var(--accent-color);
     border-radius: var(--border-radius);
@@ -558,11 +620,13 @@ button {
 
 .modal-content {
     background-color: var(--card-bg);
-    margin: 10vh auto;
+    margin: 4vh auto;
     padding: 25px;
     border: 1px solid #e5e7eb;
     width: 85%;
-    max-width: 450px;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
     border-radius: var(--border-radius);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     animation: slideIn 0.3s ease-out;
@@ -717,10 +781,14 @@ button {
 }
 
 .settings-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     background: var(--bg-color);
-    padding: 15px;
+    padding: 14px 16px;
     border-radius: 8px;
+}
+
+.settings-group:last-child {
+    margin-bottom: 0;
 }
 
 .settings-group h3 {
@@ -729,13 +797,15 @@ button {
     text-transform: uppercase;
     color: var(--secondary-text);
     margin-bottom: 12px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    font-weight: 700;
 }
 
 .setting-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
@@ -743,10 +813,173 @@ button {
     margin-bottom: 0;
 }
 
+/* Settings modal: header + scrollable body + footer all fit the window.
+   Full-width design -- the panel spans the viewport minus a small inset, so at
+   the app's 700px default the setting rows use the whole width instead of being
+   squeezed into a narrow centred column. */
+.modal-content.settings-content {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    margin: 2vh auto;
+    /* Viewport minus the panel inset. 32px total keeps a slim gutter that reads
+       as a deliberate frame rather than wasted space. */
+    width: calc(100vw - 32px);
+    max-width: 1400px;
+    height: 96vh;
+    max-height: 96vh;
+    border-radius: var(--border-radius);
+}
+
+/* A little more breathing room inside the panel once it is genuinely wide. */
+@media (min-width: 900px) {
+    .settings-body {
+        padding: 20px 28px;
+    }
+
+    .settings-group {
+        padding: 18px 22px;
+    }
+
+    .setting-row {
+        margin-bottom: 14px;
+    }
+}
+
+.settings-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: var(--card-bg);
+}
+
+.settings-head h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 18px;
+}
+
+.settings-head .close {
+    float: none;
+    position: static;
+    line-height: 1;
+}
+
+.settings-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 18px 24px;
+}
+
+.settings-foot {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: var(--card-bg);
+}
+
+.settings-stat {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.settings-foot-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-secondary {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-secondary:hover {
+    background: #f3f4f6;
+}
+
+.setting-label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    /* Grows to fill the row but caps on wide windows so the control is not
+       pushed to the far edge with a dead gap between the two. At the 700px
+       default the panel is narrow enough that the cap never bites, so the row
+       uses its full width and the text area gets more room. */
+    flex: 1 1 auto;
+    max-width: 560px;
+    min-width: 0;
+}
+
+.setting-label span {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.setting-label small {
+    font-size: 12px;
+    color: var(--secondary-text);
+    line-height: 1.4;
+}
+
+.setting-hint {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--secondary-text);
+    line-height: 1.45;
+}
+
+.setting-select,
+.setting-number {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.setting-select {
+    width: 150px;
+}
+
+.setting-select.wide {
+    width: 190px;
+    max-width: 55%;
+}
+
+.setting-number {
+    width: 80px;
+    text-align: right;
+}
+
+.setting-range {
+    flex: 0 0 45%;
+    width: 45%;
+}
+
 input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
+    flex: 0 0 auto;
+    accent-color: var(--accent-color);
 }
 
 select {

@@ -1,27 +1,76 @@
-# Node.js
+# ---------------- Node / dependencies ----------------
 node_modules/
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-error.log*
+.npm/
+.pnpm-store/
 
-# Electron
+# ---------------- Build output ----------------
+# Windows builds -> dist/, Linux builds -> dist-linux/ (kept apart because
+# electron-builder empties its output directory on every run).
 dist/
+dist-linux/
 release-builds/
 out/
 
-# OS generated
+# ---------------- Generated binaries & build metadata ----------------
+*.exe
+*.msix
+*.appx
+*.dmg
+*.AppImage
+*.blockmap
+latest.yml
+latest-linux.yml
+builder-debug.yml
+
+# Icons are generated from asset/icon.png at build time
+asset/icon.ico
+installer/icon.ico
+
+# ---------------- Signing material / secrets ----------------
+# Never commit certificates or keys. If you add code signing, keep them outside
+# the repo and point electron-builder at them with CSC_LINK / WIN_CSC_LINK.
+*.pem
+*.pfx
+*.p12
+*.cer
+*.key
+.env
+.env.*
+!.env.example
+
+# ---------------- Archives / local backups ----------------
+# A snapshot of the repo must never be committed back into the repo.
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# ---------------- Local scratch ----------------
+# Ad-hoc screenshots and generated previews at the repo root only
+# (asset/*.png are real assets and stay tracked).
+/*.png
+/*.jpg
+.preview/
+
+# ---------------- Logs & temp ----------------
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# ---------------- OS generated ----------------
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# IDEs
+# ---------------- IDEs ----------------
 .idea/
 .vscode/
 
-# Build artifacts
-*.exe
-*.dmg
-*.zip
-*.msix
-*.appx
-asset/icon.ico
-installer/icon.ico
+# ---------------- Local agent tooling state ----------------
+# Assistant session data and local notes; not part of the shipped app.
+.workbuddy-ai/

@@ -2,6 +2,8 @@ import { pipeline, env } from '../node_modules/@huggingface/transformers/dist/tr
 
 let transcriber = null;
 let loadPromise = null;
+let loadedSize = '';      // which model size is currently in memory
+let loadingSize = '';     // which size the in-flight load is for
 let listening = false;
 let transcribing = false;
 let timer = null;
@@ -16,15 +18,29 @@ let audio = {
 };
 let sessionOnTranscript = null;
 let sessionCommitted = '';
+/*
+ * Lesson text fed to Whisper as an initial prompt. Whisper conditions its
+ * output on this context, which massively improves accuracy when the speaker
+ * is reading a known passage (especially with a non-native accent) because
+ * the model expects the vocabulary and phrasing it is about to hear.
+ */
+let initialPrompt = '';
 
 export function isWhisperReady() {
     return Boolean(transcriber);
 }
 
-export async function loadWhisperAsr(onProgress) {
-    if (transcriber) return transcriber;
-    if (loadPromise) return loadPromise;
+export async function loadWhisperAsr(onProgress, preferredSize) {
+    /*
+     * The cached model is keyed on the requested size, so switching the
+     * "Speech model size" setting actually swaps the model instead of silently
+     * reusing whatever was loaded first.
+     */
+    const wanted = ['small', 'base', 'tiny'].includes(preferredSize) ? preferredSize : 'small';
+    if (transcriber && loadedSize === wanted) return transcriber;
+    if (loadPromise && loadingSize === wanted) return loadPromise;
 
+    loadingSize = wanted;
     loadPromise = (async () => {
         try {
             if (window.electronAPI && window.electronAPI.getOrtWasmDir) {
@@ -33,12 +49,25 @@ export async function loadWhisperAsr(onProgress) {
             }
             env.allowLocalModels = false;
             env.useBrowserCache = true;
-            env.backends.onnx.wasm.numThreads = 1;
+            /*
+             * Multi-threading. Single-threaded WASM inference is the slowest
+             * and least accurate path; onnxruntime-web will still fall back to
+             * 1 thread if the page is not cross-origin-isolated.
+             */
+            try {
+                const cores = (navigator.hardwareConcurrency || 4);
+                env.backends.onnx.wasm.numThreads = Math.max(1, Math.min(4, cores - 1));
+            } catch (_) {
+                env.backends.onnx.wasm.numThreads = 1;
+            }
             env.backends.onnx.wasm.proxy = false;
+            env.backends.onnx.wasm.simd = true;
 
             onProgress?.('Loading speech model…');
             const modelOptions = {
-                dtype: 'q8',
+                // fp32 is noticeably more accurate than q8 for accented speech.
+                // The en-only models are small enough that this stays practical.
+                dtype: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
                 device: 'wasm',
                 progress_callback: (info) => {
                     if (!info) return;
@@ -49,13 +78,31 @@ export async function loadWhisperAsr(onProgress) {
                     }
                 }
             };
-            try {
-                transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', modelOptions);
-            } catch (err) {
-                console.warn('whisper-base.en failed, falling back to tiny.en', err);
-                onProgress?.('Using a lighter speech model…');
-                transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', modelOptions);
+            /*
+             * Model ladder, best first. The user's chosen size leads; the rest
+             * act as fallbacks if that model fails to download or initialise.
+             */
+            const ladderBySize = {
+                small: ['Xenova/whisper-small.en', 'Xenova/whisper-base.en', 'Xenova/whisper-tiny.en'],
+                base: ['Xenova/whisper-base.en', 'Xenova/whisper-small.en', 'Xenova/whisper-tiny.en'],
+                tiny: ['Xenova/whisper-tiny.en', 'Xenova/whisper-base.en']
+            };
+            const ladder = ladderBySize[wanted] || ladderBySize.small;
+            let lastErr = null;
+            for (const modelId of ladder) {
+                try {
+                    transcriber = await pipeline('automatic-speech-recognition', modelId, modelOptions);
+                    loadedSize = wanted;
+                    console.log('[ASR] loaded', modelId);
+                    break;
+                } catch (err) {
+                    lastErr = err;
+                    console.warn('[ASR] failed to load', modelId, err);
+                    onProgress?.('Trying a different speech model…');
+                    transcriber = null;
+                }
             }
+            if (!transcriber) throw lastErr || new Error('Could not load a speech model.');
             onProgress?.('Ready. Tap Speak, then read.');
             return transcriber;
         } catch (err) {
@@ -155,6 +202,30 @@ function dropFront(count) {
     samples = [new Float32Array(all.subarray(count))];
 }
 
+/**
+ * How many trailing samples to re-feed after a forced (non-pause) cut.
+ *
+ * Scans backwards in 20ms frames for the first frame that is clearly silent,
+ * then keeps everything after it. That guarantees the next transcription
+ * window starts on a word boundary instead of mid-syllable, which is what
+ * caused garbled/duplicated words at chunk seams.
+ */
+function findLastSpeechOffset(pcm, rate) {
+    const frame = Math.max(1, Math.round(rate * 0.02));
+    const minKeep = Math.round(rate * 0.25);
+    const maxKeep = Math.round(rate * 2.2);
+    let keep = 0;
+    for (let end = pcm.length; end > 0 && keep < maxKeep; end -= frame) {
+        const start = Math.max(0, end - frame);
+        if (rms(pcm.subarray(start, end)) < 0.004) {
+            // First genuine silence going backwards - start here.
+            break;
+        }
+        keep = pcm.length - start;
+    }
+    return Math.max(minKeep, Math.min(maxKeep, keep));
+}
+
 function transcriptText(result) {
     if (!result) return '';
     if (typeof result === 'string') return result;
@@ -166,17 +237,28 @@ function transcriptText(result) {
 async function transcribeBuffer(float32, fromRate) {
     const pcm = normalizePcm(resample(float32, fromRate, 16000));
     if (rms(pcm) < 0.006) return '';
-    const output = await transcriber(pcm, {
+
+    const options = {
         temperature: 0,
         do_sample: false,
-        chunk_length_s: 20
-    });
+        chunk_length_s: 20,
+        language: 'en',
+        task: 'transcribe'
+    };
+    /*
+     * Conditioning on the lesson text is the single biggest accuracy win for
+     * read-aloud practice: the model stops guessing and starts matching the
+     * words it already expects. Keep it short - Whisper only uses ~224 tokens.
+     */
+    if (initialPrompt) options.initial_prompt = initialPrompt;
+
+    const output = await transcriber(pcm, options);
     const text = cleanTranscript(transcriptText(output));
     if (!text || isLikelyHallucination(text, pcm)) return '';
     return text;
 }
 
-export async function startWhisperListening({ onTranscript, onLevel, onError }) {
+export async function startWhisperListening({ onTranscript, onLevel, onError, prompt }) {
     await loadWhisperAsr();
     await stopWhisperListening({ flush: false });
 
@@ -184,11 +266,21 @@ export async function startWhisperListening({ onTranscript, onLevel, onError }) 
     samples = [];
     sessionCommitted = '';
     sessionOnTranscript = onTranscript;
+    initialPrompt = String(prompt || '').slice(0, 900);
 
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-            echoCancellation: true,
-            noiseSuppression: false,
+            /*
+             * For read-aloud practice the speaker is close to the mic and we
+             * are NOT playing audio at the same time, so:
+             *   - echoCancellation OFF: it can gate out quiet or unusual
+             *     speech (a known problem with accented English).
+             *   - noiseSuppression ON: removes fan hum / room hiss that the
+             *     model would otherwise try to decode as words.
+             *   - autoGainControl ON: lifts a quiet speaker to a usable level.
+             */
+            echoCancellation: false,
+            noiseSuppression: true,
             autoGainControl: true,
             channelCount: 1,
             sampleRate: 16000
@@ -241,17 +333,36 @@ export async function startWhisperListening({ onTranscript, onLevel, onError }) 
         const duration = raw.length / inputRate;
         if (duration < 0.55) return;
 
-        const recent = raw.subarray(Math.max(0, raw.length - Math.round(inputRate * 0.28)));
+        /*
+         * Look at a longer trailing window than before (0.45s vs 0.28s) so a
+         * brief inter-word gap is not mistaken for the end of an utterance.
+         */
+        const tailLen = Math.max(1, Math.round(inputRate * 0.45));
+        const recent = raw.subarray(Math.max(0, raw.length - tailLen));
         const quiet = rms(recent) < 0.004;
-        const paused = quiet && Date.now() - lastLoudAt > 480;
-        const tooLong = duration >= 2.8;
+        const paused = quiet && Date.now() - lastLoudAt > 420;
+
+        /*
+         * Hard ceiling raised 2.8s -> 6s. Cutting every 2.8s chopped words in
+         * half and forced the model to re-hear stale overlap; a longer window
+         * keeps whole sentences together and is far more accurate.
+         */
+        const tooLong = duration >= 6;
         if (!paused && !tooLong) return;
 
         transcribing = true;
         const snapshotLen = raw.length;
         try {
             const piece = await transcribeBuffer(raw, inputRate);
-            const overlap = tooLong && !paused ? Math.round(inputRate * 0.3) : 0;
+            /*
+             * Overlap is only needed when we were forced to cut mid-utterance.
+             * Find the last loud sample and keep audio from there, so the next
+             * pass re-starts on a real sound rather than an arbitrary offset.
+             */
+            let overlap = 0;
+            if (tooLong && !paused) {
+                overlap = findLastSpeechOffset(raw, inputRate);
+            }
             dropFront(Math.max(0, snapshotLen - overlap));
             heardSpeech = paused ? false : !quiet;
             publish(piece);
@@ -300,4 +411,5 @@ export async function stopWhisperListening({ flush = true } = {}) {
     audio = { ctx: null, stream: null, processor: null, source: null, mute: null };
     samples = [];
     sessionOnTranscript = null;
+    initialPrompt = '';
 }

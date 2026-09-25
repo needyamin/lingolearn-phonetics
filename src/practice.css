@@ -17,7 +17,7 @@ body.practice-page {
 body.practice-page {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     color: #111827;
-    background: #fff;
+    background: #f8fafc;
     overflow: hidden;
     -webkit-user-select: none;
     user-select: none;
@@ -27,6 +27,17 @@ button {
     font-family: inherit;
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
 .practice-shell {
     display: flex;
     flex-direction: column;
@@ -34,6 +45,8 @@ button {
     min-height: 0;
     padding: 14px 20px 16px;
 }
+
+/* ---------------- top bar ---------------- */
 
 .practice-top {
     display: flex;
@@ -71,7 +84,7 @@ button {
     height: 34px;
     border: none;
     border-radius: 9px;
-    background: #f3f4f6;
+    background: #eef2f7;
     color: #374151;
     font-size: 22px;
     line-height: 1;
@@ -84,17 +97,144 @@ button {
 }
 
 .btn-icon:hover {
-    background: #e5e7eb;
+    background: #e2e8f0;
 }
+
+/* ---------------- HUD: score + sentences ---------------- */
+
+.practice-hud {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    margin: 12px 0 10px;
+}
+
+.score-ring {
+    --angle: 0deg;
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(#10b981 var(--angle), #e5e7eb 0);
+    display: grid;
+    place-items: center;
+    transition: background 0.3s ease;
+}
+
+.score-ring.is-low {
+    background: conic-gradient(#f59e0b var(--angle), #e5e7eb 0);
+}
+
+.score-ring::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: #f8fafc;
+}
+
+.score-value {
+    position: relative;
+    z-index: 1;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #065f46;
+}
+
+.score-ring.is-low .score-value {
+    color: #b45309;
+}
+
+.score-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.score-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.live-dot.is-live {
+    background: #f59e0b;
+}
+
+.live-dot.is-hot {
+    background: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.live-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.sentence-chips {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 45%;
+}
+
+.sentence-chip {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: #e5e7eb;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sentence-chip.is-partial {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.sentence-chip.is-done {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.sentence-chip.is-current {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 2px #111827 inset;
+}
+
+/* ---------------- progress bar ---------------- */
 
 .practice-progress {
     flex-shrink: 0;
-    margin: 12px 0 8px;
+    margin-bottom: 10px;
 }
 
 .practice-progress-bar {
     height: 3px;
-    background: #f3f4f6;
+    background: #e5e7eb;
     border-radius: 999px;
     overflow: hidden;
 }
@@ -104,35 +244,63 @@ button {
     height: 100%;
     background: #10b981;
     border-radius: 999px;
-    transition: width 0.2s ease, background-color 0.2s ease;
+    transition: width 0.25s ease, background-color 0.25s ease;
 }
 
 .practice-progress-fill.has-wrong {
     background: #f59e0b;
 }
 
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
+/* ---------------- "read from here" cue ---------------- */
+
+.speak-here-cue {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    transition: opacity 0.2s ease;
 }
+
+.speak-here-cue.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cue-label {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #b45309;
+}
+
+.cue-word {
+    font-size: 16px;
+    font-weight: 700;
+    color: #92400e;
+}
+
+/* ---------------- reading card ---------------- */
 
 .practice-card {
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 6px 2px 8px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
 .practice-text {
     margin: 0;
     font-size: 22px;
-    line-height: 1.7;
+    line-height: 1.75;
     color: #111827;
     letter-spacing: -0.01em;
     -webkit-user-select: text;
@@ -141,8 +309,9 @@ button {
 
 .practice-word {
     display: inline;
-    padding: 1px 1px;
-    border-radius: 3px;
+    padding: 1px 2px;
+    border-radius: 4px;
+    transition: color 0.18s ease, background-color 0.18s ease;
 }
 
 .practice-word.current {
@@ -164,16 +333,38 @@ button {
 .practice-word.missed {
     text-decoration: line-through;
     text-decoration-thickness: 1px;
-    opacity: 0.85;
+    opacity: 0.8;
 }
 
-.speak-here-cue {
-    display: none !important;
+/* ---------------- bottom stack ---------------- */
+
+.practice-bottom {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .heard-panel {
-    flex-shrink: 0;
-    margin: 0 0 8px;
+    padding: 8px 12px;
+    border-radius: 9px;
+    background: #f1f5f9;
+}
+
+.heard-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.heard-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #94a3b8;
 }
 
 .heard-count {
@@ -184,7 +375,9 @@ button {
     margin: 0;
     font-size: 13px;
     line-height: 1.45;
-    color: #6b7280;
+    color: #475569;
+    max-height: 42px;
+    overflow: hidden;
     -webkit-user-select: text;
     user-select: text;
 }
@@ -193,20 +386,120 @@ button {
     display: none;
 }
 
-.practice-dock {
-    flex-shrink: 0;
+/* ---------------- result card ---------------- */
+
+.result-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 22px -14px rgba(15, 23, 42, 0.28);
+}
+
+.result-card.is-perfect {
+    border-color: #a7f3d0;
+    background: #f0fdf9;
+}
+
+.result-title {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+
+.result-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.result-stat {
     display: flex;
     flex-direction: column;
+}
+
+.result-stat-value {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    color: #047857;
+    line-height: 1.1;
+}
+
+.result-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.result-missed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+    max-height: 62px;
+    overflow: auto;
+}
+
+.result-perfect {
+    font-size: 12px;
+    font-weight: 600;
+    color: #047857;
+}
+
+.missed-chip {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.missed-more {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.result-actions {
+    display: flex;
+    justify-content: center;
     gap: 8px;
 }
 
+/* ---------------- microphone meter ---------------- */
+
 .mic-meter {
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wave-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 26px;
+}
+
+.wave-bar {
+    width: 4px;
+    height: 12%;
+    border-radius: 999px;
+    background: #10b981;
+    transition: height 0.09s linear, background-color 0.2s ease;
 }
 
 .mic-meter-track {
     height: 3px;
-    background: #f3f4f6;
+    background: #e5e7eb;
     border-radius: 999px;
     overflow: hidden;
 }
@@ -223,13 +516,21 @@ button {
     background: #f59e0b;
 }
 
+/* ---------------- status + actions ---------------- */
+
+.practice-dock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .practice-status,
 .practice-success {
     margin: 0;
     min-height: 18px;
     font-size: 13px;
     text-align: center;
-    color: #6b7280;
+    color: #64748b;
 }
 
 .practice-status.is-error {
@@ -268,15 +569,16 @@ button {
     font-weight: 650;
     cursor: pointer;
     padding: 9px 16px;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .btn-ghost {
-    background: #f3f4f6;
+    background: #eef2f7;
     color: #374151;
 }
 
 .btn-ghost:hover {
-    background: #e5e7eb;
+    background: #e2e8f0;
 }
 
 .btn-mic {
@@ -299,4 +601,26 @@ button {
 .btn-mic:focus-visible {
     outline: 2px solid #111827;
     outline-offset: 2px;
+}
+
+/* ---------------- short windows ---------------- */
+
+@media (max-height: 700px) {
+    .practice-text {
+        font-size: 19px;
+        line-height: 1.65;
+    }
+
+    .score-ring {
+        width: 44px;
+        height: 44px;
+    }
+
+    .practice-hud {
+        margin: 8px 0 8px;
+    }
+
+    .speak-here-cue {
+        padding: 5px 10px;
+    }
 }

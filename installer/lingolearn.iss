@@ -2,7 +2,7 @@
 ; Builds one Setup .exe you can publish (GitHub Releases, website, USB).
 
 #ifndef AppVersion
-  #define AppVersion "2.0.0"
+  #define AppVersion "2.1.0"
 #endif
 
 #ifndef AppName

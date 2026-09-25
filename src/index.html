@@ -82,60 +82,245 @@
             <div id="bangla-display" class="ipa-text"></div>
         </div>
 
-        <div class="history-container">
-            <div class="history-header">
-                <span class="history-label">Recent History</span>
-                <button id="btn-clear-history-ui" class="btn-clear-history">Clear</button>
-            </div>
-            <div id="history-list" class="history-list"></div>
-        </div>
+        <footer class="app-footer">
+            <span class="app-footer-text">Developed by</span>
+            <a id="btn-ansnew" class="app-footer-link" href="https://inside.ansnew.com/" title="Visit ANSNEW TECH. website">ANSNEW TECH.</a>
+        </footer>
     </div>
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Settings</h2>
+        <div class="modal-content settings-content">
+            <div class="settings-head">
+                <h2>Settings</h2>
+                <span class="close">&times;</span>
+            </div>
 
-            <div class="settings-group">
-                <h3>Text-to-Speech</h3>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="setting-tts-enabled"> Enable Text-to-Speech</label>
+            <div class="settings-body">
+                <div class="settings-group">
+                    <h3>Translate Popup</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens">
+                            <span>Popup on text selection</span>
+                            <small>Show the translate screen when you select text</small>
+                        </label>
+                        <input type="checkbox" id="setting-lens">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-copy">
+                            <span>Popup on copy</span>
+                            <small>Show the translate screen when you copy text</small>
+                        </label>
+                        <input type="checkbox" id="setting-lens-copy">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-dict">
+                            <span>Show dictionary meanings</span>
+                            <small>List parts of speech and alternate meanings</small>
+                        </label>
+                        <input type="checkbox" id="setting-lens-dict">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-position">
+                            <span>Popup position</span>
+                            <small>Where the translate screen appears</small>
+                        </label>
+                        <select id="setting-lens-position" class="setting-select">
+                            <option value="cursor">Near cursor</option>
+                            <option value="center">Top centre</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-theme">
+                            <span>Popup theme</span>
+                            <small>Colour scheme for the popup</small>
+                        </label>
+                        <select id="setting-lens-theme" class="setting-select">
+                            <option value="auto">Auto (system)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-max">
+                            <span>Max selection length</span>
+                            <small>Longer selections are trimmed</small>
+                        </label>
+                        <input type="number" id="setting-lens-max" min="50" max="1500" step="50" class="setting-number">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-autohide">
+                            <span>Auto-hide after</span>
+                            <small>Seconds the popup stays (0 = never)</small>
+                        </label>
+                        <input type="number" id="setting-lens-autohide" min="0" max="120" step="1" class="setting-number">
+                    </div>
+                    <div class="setting-hint">Manual capture: <b>Ctrl+Shift+G</b> · selections are never stored.</div>
                 </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="setting-auto-speak"> Auto-speak when text is copied</label>
+
+                <div class="settings-group">
+                    <h3>Text-to-Speech</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-tts-enabled">
+                            <span>Voice output</span>
+                            <small>Master switch for all speech</small>
+                        </label>
+                        <input type="checkbox" id="setting-tts-enabled">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-auto-speak">
+                            <span>Auto-speak</span>
+                            <small>Speak automatically when text arrives</small>
+                        </label>
+                        <input type="checkbox" id="setting-auto-speak">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-speak-selection">
+                            <span>Speak on selection popup</span>
+                            <small>Auto-speak the popup opened by selecting</small>
+                        </label>
+                        <input type="checkbox" id="setting-speak-selection">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-speak-copy">
+                            <span>Speak on copy popup</span>
+                            <small>Auto-speak the popup opened by copying</small>
+                        </label>
+                        <input type="checkbox" id="setting-speak-copy">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-lens-speaktarget">
+                            <span>Speak which text</span>
+                            <small>Source text or its Bangla meaning</small>
+                        </label>
+                        <select id="setting-lens-speaktarget" class="setting-select">
+                            <option value="source">Selected text</option>
+                            <option value="translation">Bangla meaning</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-rate">
+                            <span>Speech rate</span>
+                            <small id="rate-value">1.0</small>
+                        </label>
+                        <input type="range" id="setting-rate" min="0.1" max="3" step="0.1" class="setting-range">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-volume">
+                            <span>Volume</span>
+                            <small id="volume-value">1.0</small>
+                        </label>
+                        <input type="range" id="setting-volume" min="0" max="1" step="0.1" class="setting-range">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-voice">
+                            <span>Voice</span>
+                            <small>System voice used for playback</small>
+                        </label>
+                        <select id="setting-voice" class="setting-select wide"></select>
+                    </div>
                 </div>
-                <div class="setting-row">
-                    <label>Speech Rate:</label>
-                    <input type="range" id="setting-rate" min="0.1" max="3" step="0.1">
-                    <span id="rate-value">1.0</span>
+
+                <div class="settings-group">
+                    <h3>Clipboard</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-clipboard">
+                            <span>Monitor clipboard</span>
+                            <small>Detect copied text in the background</small>
+                        </label>
+                        <input type="checkbox" id="setting-clipboard">
+                    </div>
                 </div>
-                <div class="setting-row">
-                    <label>Volume:</label>
-                    <input type="range" id="setting-volume" min="0" max="1" step="0.1">
-                    <span id="volume-value">1.0</span>
+
+                <div class="settings-group">
+                    <h3>Display</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-show-ipa">
+                            <span>Show IPA pronunciation</span>
+                            <small>Phonetic transcription in the main window</small>
+                        </label>
+                        <input type="checkbox" id="setting-show-ipa">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-show-bangla">
+                            <span>Show Bangla meaning</span>
+                            <small>Bangla translation in the main window</small>
+                        </label>
+                        <input type="checkbox" id="setting-show-bangla">
+                    </div>
                 </div>
-                <div class="setting-row">
-                    <label>Voice:</label>
-                    <select id="setting-voice" style="width: 150px;"></select>
+
+                <div class="settings-group">
+                    <h3>Startup</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-launch-login">
+                            <span>Start automatically at login</span>
+                            <small>Run in the background when you sign in to your computer</small>
+                        </label>
+                        <input type="checkbox" id="setting-launch-login">
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-start-minimized">
+                            <span>Start minimised (in tray)</span>
+                            <small>Hide the window when started automatically</small>
+                        </label>
+                        <input type="checkbox" id="setting-start-minimized">
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Speaking Practice</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-practice-sensitivity">
+                            <span>Recognition sensitivity</span>
+                            <small>How forgiving word matching is for your accent</small>
+                        </label>
+                        <select id="setting-practice-sensitivity" class="setting-select">
+                            <option value="lenient">Lenient — best for strong accents</option>
+                            <option value="normal">Normal — balanced</option>
+                            <option value="strict">Strict — must match closely</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-practice-model">
+                            <span>Speech model size</span>
+                            <small>Bigger is more accurate but slower to load</small>
+                        </label>
+                        <select id="setting-practice-model" class="setting-select">
+                            <option value="small">Small — most accurate</option>
+                            <option value="base">Base — balanced</option>
+                            <option value="tiny">Tiny — fastest</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-practice-prompt">
+                            <span>Use lesson text as speech hint</span>
+                            <small>Greatly improves accuracy when reading aloud</small>
+                        </label>
+                        <input type="checkbox" id="setting-practice-prompt">
+                    </div>
+                    <div class="setting-hint">Open practice with the book button. Settings apply the next time you tap Speak.</div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Window</h3>
+                    <div class="setting-row">
+                        <label class="setting-label" for="setting-minimize-tray">
+                            <span>Minimise &amp; close to tray</span>
+                            <small>Keep running in the tray instead of quitting</small>
+                        </label>
+                        <input type="checkbox" id="setting-minimize-tray">
+                    </div>
+                    <div class="setting-hint">Show the window any time with <b>Ctrl+Shift+L</b>.</div>
                 </div>
             </div>
 
-            <div class="settings-group">
-                <h3>Clipboard Monitoring</h3>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="setting-clipboard"> Monitor clipboard for copied text</label>
+            <div class="settings-foot">
+                <span class="settings-stat">Dictionary loaded: <span id="dict-stat">Loading…</span></span>
+                <div class="settings-foot-actions">
+                    <button id="btn-reset-settings" class="btn-secondary" type="button">Reset</button>
+                    <button id="btn-save-settings" class="btn-speak" type="button">Save</button>
                 </div>
-                <div class="setting-row">
-                    <label><input type="checkbox" id="setting-show-ipa"> Show IPA pronunciation</label>
-                </div>
-            </div>
-
-            <div class="setting-row" style="justify-content: flex-end;">
-                <button id="btn-save-settings" class="btn-speak">Save</button>
-            </div>
-            <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #999;">
-                Dictionary loaded: <span id="dict-stat">Loading...</span>
             </div>
         </div>
     </div>
